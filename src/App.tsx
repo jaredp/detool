@@ -1,16 +1,16 @@
-import * as React from 'react';
-import './style.css';
-import { faker } from '@faker-js/faker';
-import _ from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
+import * as React from "react";
+import "./style.css";
+import { faker } from "@faker-js/faker";
+import _ from "lodash";
+import { v4 as uuidv4 } from "uuid";
 
 const Row: React.FC<{ c: React.ReactNode[] }> = (props) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "row", gap: 16 }}>
       {props.c.map((child, i) => (
         <div
           key={i}
-          style={{ flex: 1, /*border: '1px solid #DDD',*/ padding: '1em 0' }}
+          style={{ flex: 1, /*border: '1px solid #DDD',*/ padding: "1em 0" }}
           children={child}
         />
       ))}
@@ -18,9 +18,9 @@ const Row: React.FC<{ c: React.ReactNode[] }> = (props) => {
   );
 };
 
-/* 
+/*
 
-Model defined in high level types that know thier
+Model defined in high level types that know there
 1. representation (string, int, etc)
 2. validation (email address, phone number, etc)
 3. default view and edit controls (plain text, <input type="text" />, <input type="email" />)
@@ -34,7 +34,7 @@ interface ModelBase {
 
 interface Field<T> {
   dummy_value: () => T;
-  view: (T) => React.ReactNode;
+  view: (val: T) => React.ReactNode;
   edit: (val: T, update: (newValue: T) => void) => React.ReactNode;
   initial_value: () => T;
 }
@@ -44,18 +44,22 @@ type InstanceOf<T> = { [Property in keyof T]: FieldType<T[Property]> };
 type CrudUI<T> = { [Property in keyof T]: React.ReactNode };
 
 function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.mapValues(model, (field) => field.dummy_value());
+  return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
 }
 
 function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.mapValues(model, (field) => field.initial_value());
+  return _.mapValues(model, (field: Field<any>) =>
+    field.initial_value()
+  ) as any;
 }
 
 function view_ui<M extends ModelBase>(
   model: M,
   instance: InstanceOf<M>
 ): CrudUI<M> {
-  return _.mapValues(model, (field, name) => field.view(instance[name]));
+  return _.mapValues(model, (field: Field<any>, name) =>
+    field.view(instance[name])
+  );
 }
 
 function edit_ui<M extends ModelBase>(
@@ -63,10 +67,12 @@ function edit_ui<M extends ModelBase>(
   instance: InstanceOf<M>,
   update: (newInstance: InstanceOf<M>) => void
 ): CrudUI<M> {
-  return _.mapValues(model, (field, name) =>
-    field.edit(instance[name], (newValue) =>
-      update({ ...instance, [name]: newValue })
-    )
+  return _.mapValues(
+    model,
+    (field: Field<any>, name) =>
+      field.edit(instance[name], (newValue) =>
+        update({ ...instance, [name]: newValue })
+      ) as any
   );
 }
 
@@ -92,41 +98,41 @@ const DateField: Field<Date> = {
 
 const ShortText: Field<string> = {
   dummy_value: () => faker.lorem.words(),
-  initial_value: () => '',
+  initial_value: () => "",
   view: (val) => val,
   edit: (val, update) => (
     <input
       type="text"
       value={val}
       onChange={(e) => update(e.target.value)}
-      style={{ width: '100%' }}
+      style={{ width: "100%" }}
     />
   ),
 };
 
 const EmailAddress: Field<string> = {
   dummy_value: () => faker.internet.email(),
-  initial_value: () => '',
+  initial_value: () => "",
   view: (val) => val,
   edit: (val, update) => (
     <input
       type="email"
       value={val}
       onChange={(e) => update(e.target.value)}
-      style={{ width: '100%' }}
+      style={{ width: "100%" }}
     />
   ),
 };
 
 const LongText: Field<string> = {
   dummy_value: () => faker.lorem.paragraph(),
-  initial_value: () => '',
+  initial_value: () => "",
   view: (val) => val,
   edit: (val, update) => (
     <textarea
       value={val}
       onChange={(e) => update(e.target.value)}
-      style={{ width: '100%' }}
+      style={{ width: "100%" }}
     />
   ),
 };
@@ -147,7 +153,7 @@ const EditableCrud = <M extends ModelBase>(props: {
   }) => (
     <div>
       {detail_view(slots.crud_ctrls)}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
         {slots.actions}
       </div>
     </div>
@@ -207,7 +213,7 @@ const NewInstancePage = <M extends ModelBase>(props: {
   return (
     <div>
       {detail_view(edit_ui(model, dirtyInstance, setDirtyInstance))}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <button
           children="cancel"
           onClick={() => {
@@ -275,7 +281,7 @@ const PersonForm: React.FC<{
 }> = (props) => {
   const { person } = props;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <Row c={[person.firstName, person.lastName]} />
       <Row c={[person.email]} />
       <Row c={[person.bio]} />
@@ -284,7 +290,7 @@ const PersonForm: React.FC<{
   );
 };
 
-const new_instance_symbol = Symbol('new instance');
+const new_instance_symbol = Symbol("new instance");
 
 export default function App() {
   const [people, setPeople] = React.useState(

@@ -4,6 +4,9 @@ dependencies:
   '@faker-js/faker':
     specifier: 7.6.0
     version: 7.6.0
+  '@types/uuid':
+    specifier: ^9.0.1
+    version: 9.0.1
   lodash:
     specifier: 4.17.21
     version: 4.17.21
@@ -2431,6 +2434,10 @@ packages:
 
   /@types/trusted-types@2.0.3:
     resolution: {integrity: sha512-NfQ4gyz38SL8sDNrSixxU2Os1a5xcdFxipAFxYEuLUlvU2uDwS4NUpsImcf1//SlWItCVMMLiylsxbmNMToV/g==}
+    dev: false
+
+  /@types/uuid@9.0.1:
+    resolution: {integrity: sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==}
     dev: false
 
   /@types/ws@8.5.4:
