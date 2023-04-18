@@ -10,7 +10,7 @@ const Row: React.FC<{ c: React.ReactNode[] }> = (props) => {
       {props.c.map((child, i) => (
         <div
           key={i}
-          style={{ flex: 1, /*border: '1px solid #DDD',*/ padding: '1em' }}
+          style={{ flex: 1, /*border: '1px solid #DDD',*/ padding: '1em 0' }}
           children={child}
         />
       ))}
@@ -43,16 +43,14 @@ type InstanceOf<T> = { [Property in keyof T]: FieldType<T[Property]> };
 type CrudUI<T> = { [Property in keyof T]: React.ReactNode };
 
 function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.fromPairs(_.toPairs(model).map(([k, v]) => [k, v.dummy_value()]));
+  return _.mapValues(model, (field) => field.dummy_value());
 }
 
 function view_ui<M extends ModelBase>(
   model: M,
   instance: InstanceOf<M>
 ): CrudUI<M> {
-  return _.fromPairs(
-    _.toPairs(model).map(([k, v]) => [k, v.view(instance[k])])
-  );
+  return _.mapValues(model, (field, name) => field.view(instance[name]));
 }
 
 function edit_ui<M extends ModelBase>(
@@ -60,11 +58,10 @@ function edit_ui<M extends ModelBase>(
   instance: InstanceOf<M>,
   update: (newInstance: InstanceOf<M>) => void
 ): CrudUI<M> {
-  return _.fromPairs(
-    _.toPairs(model).map(([k, v]) => [
-      k,
-      v.edit(instance[k], (newValue) => update({ ...instance, [k]: newValue })),
-    ])
+  return _.mapValues(model, (field, name) =>
+    field.edit(instance[name], (newValue) =>
+      update({ ...instance, [name]: newValue })
+    )
   );
 }
 
@@ -138,37 +135,62 @@ const Person = {
   linkedin: Optional(URL),
 };
 
-const PersonForm: React.FC<{
-  instance: InstanceOf<typeof Person>;
-  update: (newInstance: InstanceOf<typeof Person>) => void;
-  mode: 'read' | 'edit' | 'create';
+const PersonDetail: React.FC<{
+  instance: CrudUI<typeof Person>;
 }> = (props) => {
-  const { mode } = props;
-  const [instance, setInstance] = React.useState(props.instance);
-  const person: CrudUI<typeof Person> =
-    mode === 'read'
-      ? view_ui(Person, instance)
-      : edit_ui(
-          Person,
-          instance,
-          (newInstance) => void setInstance(newInstance)
-        );
+  const person = props.instance;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Row c={[person.firstName, person.lastName]} />
       <Row c={[person.email]} />
       <Row c={[person.bio]} />
+    </div>
+  );
+};
 
-      {mode !== 'read' ? (
-        <Row
-          c={[
+const DetailPage: React.FC<{
+  instance: InstanceOf<typeof Person>;
+  update: (newInstance: InstanceOf<typeof Person>) => void;
+}> = (props) => {
+  const [dirtyInstance, setDirtyInstance] = React.useState<InstanceOf<
+    typeof Person
+  > | null>(null);
+  const person: CrudUI<typeof Person> =
+    dirtyInstance === null
+      ? view_ui(Person, props.instance)
+      : edit_ui(Person, dirtyInstance, setDirtyInstance);
+
+  return (
+    <div>
+      <PersonDetail instance={person} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        {dirtyInstance === null ? (
+          <React.Fragment>
+            <button
+              children="edit"
+              onClick={() => {
+                setDirtyInstance(props.instance);
+              }}
+            />
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <button
+              children="cancel"
+              onClick={() => {
+                setDirtyInstance(null);
+              }}
+            />
             <button
               children="save"
-              onClick={() => void props.update(instance)}
-            />,
-          ]}
-        />
-      ) : null}
+              onClick={() => {
+                props.update(dirtyInstance);
+                setDirtyInstance(null);
+              }}
+            />
+          </React.Fragment>
+        )}
+      </div>
     </div>
   );
 };
@@ -184,17 +206,19 @@ const AdminTable = <M extends ModelBase>(props: {
   return (
     <table>
       <thead>
-        {columns.map((c) => (
-          <th children={c} />
-        ))}
+        <tr>
+          {columns.map((c) => (
+            <th key={c} children={c} />
+          ))}
+        </tr>
       </thead>
       <tbody>
         {instances.map((instance) => {
           const ui = view_ui(model, instance);
           return (
-            <tr onClick={() => props.onSelected(instance)}>
+            <tr onClick={() => props.onSelected(instance)} key={instance.id}>
               {columns.map((c) => (
-                <td>{ui[c]}</td>
+                <td key={`${instance.id}/${c}`}>{ui[c]}</td>
               ))}
             </tr>
           );
@@ -204,65 +228,40 @@ const AdminTable = <M extends ModelBase>(props: {
   );
 };
 
-const DetailPage: React.FC<{
-  instance: InstanceOf<typeof Person>;
-  update: (newInstance: InstanceOf<typeof Person>) => void;
-}> = (props) => {
-  const [edit, setEdit] = React.useState(false);
-  return (
+export default function App() {
+  const [people, setPeople] = React.useState(
+    (_.range(100) as number[]).map((_i) => dummy_instance(Person))
+  );
+
+  const [selectedUuid, setSelectedUuid] = React.useState<string | null>(null);
+  const selected = people.find((p) => p.id === selectedUuid);
+
+  const body = !selected ? (
     <div>
-      <PersonForm
-        instance={props.instance}
-        mode={edit ? 'edit' : 'read'}
-        update={props.update}
+      <p>Click any rows below to edit them</p>
+      <AdminTable
+        model={Person}
+        instances={people}
+        onSelected={(person) => setSelectedUuid(person.id)}
       />
-      {edit ? (
-        <button children="done" onClick={() => setEdit(false)} />
-      ) : (
-        <button children="edit" onClick={() => setEdit(true)} />
-      )}
+    </div>
+  ) : (
+    <div>
+      <div>
+        <button children="back" onClick={() => setSelectedUuid(null)} />
+      </div>
+      <DetailPage
+        instance={selected}
+        update={(updated_person) => {
+          setPeople((oldPeople) =>
+            oldPeople.map((person) =>
+              person.id === updated_person.id ? updated_person : person
+            )
+          );
+        }}
+      />
     </div>
   );
-};
-
-export default function App() {
-  const [localState, setLocalState] = React.useState(
-    _.range(100).map((_i) => dummy_instance(Person))
-  );
-  const [selected, setSelected] = React.useState<InstanceOf<
-    typeof Person
-  > | null>(null);
-
-  const body =
-    selected === null ? (
-      <div>
-        <p>Click any rows below to edit them</p>
-        <AdminTable
-          model={Person}
-          instances={localState}
-          onSelected={(person) => setSelected(person)}
-        />
-      </div>
-    ) : (
-      <div>
-        <div>
-          <button children="back" onClick={() => setSelected(null)} />
-        </div>
-        <DetailPage
-          instance={selected}
-          update={(newInstance) => {
-            const newLocalState = [];
-            for (const instance of localState) {
-              newLocalState.push(
-                instance.id === newInstance.id ? newInstance : instance
-              );
-            }
-            setLocalState(newLocalState);
-            setSelected(null);
-          }}
-        />
-      </div>
-    );
 
   return (
     <div>
