@@ -211,9 +211,6 @@ const DetailPage: React.FC<{
   const [edit, setEdit] = React.useState(false);
   return (
     <div>
-      <h1>Hello StackBlitz!</h1>
-      <p>Start editing to see some magic happen :)</p>
-
       <PersonForm
         instance={props.instance}
         mode={edit ? 'edit' : 'read'}
@@ -238,11 +235,14 @@ export default function App() {
 
   const body =
     selected === null ? (
-      <AdminTable
-        model={Person}
-        instances={localState}
-        onSelected={(person) => setSelected(person)}
-      />
+      <div>
+        <p>Click any rows below to edit them</p>
+        <AdminTable
+          model={Person}
+          instances={localState}
+          onSelected={(person) => setSelected(person)}
+        />
+      </div>
     ) : (
       <div>
         <div>
@@ -264,5 +264,11 @@ export default function App() {
       </div>
     );
 
-  return <div>{body}</div>;
+  return (
+    <div>
+      <h1>detool</h1>
+
+      {body}
+    </div>
+  );
 }
