@@ -36,6 +36,7 @@ interface Field<T> {
   dummy_value: () => T;
   view: (T) => React.ReactNode;
   edit: (val: T, update: (newValue: T) => void) => React.ReactNode;
+  initial_value: () => T;
 }
 
 type FieldType<T> = T extends Field<infer X> ? X : never;
@@ -44,6 +45,10 @@ type CrudUI<T> = { [Property in keyof T]: React.ReactNode };
 
 function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.mapValues(model, (field) => field.dummy_value());
+}
+
+function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
+  return _.mapValues(model, (field) => field.initial_value());
 }
 
 function view_ui<M extends ModelBase>(
@@ -67,12 +72,14 @@ function edit_ui<M extends ModelBase>(
 
 const UuidField: Field<string> = {
   dummy_value: () => uuidv4(),
+  initial_value: () => uuidv4(),
   view: (val) => val,
   edit: (val, _update) => <input type="input" readOnly disabled value={val} />,
 };
 
 const DateField: Field<Date> = {
   dummy_value: () => new Date(),
+  initial_value: () => new Date(),
   view: (val) => val.toString(),
   edit: (val, update) => (
     <input
@@ -85,6 +92,7 @@ const DateField: Field<Date> = {
 
 const ShortText: Field<string> = {
   dummy_value: () => faker.lorem.words(),
+  initial_value: () => '',
   view: (val) => val,
   edit: (val, update) => (
     <input
@@ -98,6 +106,7 @@ const ShortText: Field<string> = {
 
 const EmailAddress: Field<string> = {
   dummy_value: () => faker.internet.email(),
+  initial_value: () => '',
   view: (val) => val,
   edit: (val, update) => (
     <input
@@ -111,6 +120,7 @@ const EmailAddress: Field<string> = {
 
 const LongText: Field<string> = {
   dummy_value: () => faker.lorem.paragraph(),
+  initial_value: () => '',
   view: (val) => val,
   edit: (val, update) => (
     <textarea
@@ -182,6 +192,39 @@ const EditableCrud = <M extends ModelBase>(props: {
   });
 };
 
+const NewInstancePage = <M extends ModelBase>(props: {
+  model: M;
+  detail_view: (crud_ctrls: CrudUI<M>) => React.ReactNode;
+  save: (newInstance: InstanceOf<M>) => void;
+  cancel: () => void;
+}): React.ReactElement => {
+  const { model, detail_view } = props;
+
+  const [dirtyInstance, setDirtyInstance] = React.useState<InstanceOf<M>>(
+    blank_instance(model)
+  );
+
+  return (
+    <div>
+      {detail_view(edit_ui(model, dirtyInstance, setDirtyInstance))}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          children="cancel"
+          onClick={() => {
+            props.cancel();
+          }}
+        />
+        <button
+          children="add"
+          onClick={() => {
+            props.save(dirtyInstance);
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 const AdminTable = <M extends ModelBase>(props: {
   model: M;
   instances: InstanceOf<M>[];
@@ -236,47 +279,73 @@ const PersonForm: React.FC<{
       <Row c={[person.firstName, person.lastName]} />
       <Row c={[person.email]} />
       <Row c={[person.bio]} />
+      <Row c={[person.twitter, person.linkedin]} />
     </div>
   );
 };
+
+const new_instance_symbol = Symbol('new instance');
 
 export default function App() {
   const [people, setPeople] = React.useState(
     (_.range(100) as number[]).map((_i) => dummy_instance(Person))
   );
 
-  const [selectedUuid, setSelectedUuid] = React.useState<string | null>(null);
+  const [selectedUuid, setSelectedUuid] = React.useState<
+    string | typeof new_instance_symbol | null
+  >(null);
   const selected = people.find((p) => p.id === selectedUuid);
 
-  const body = !selected ? (
-    <div>
-      <p>Click any rows below to edit them</p>
-      <AdminTable
-        model={Person}
-        instances={people}
-        onSelected={(person) => setSelectedUuid(person.id)}
-      />
-    </div>
-  ) : (
-    <div>
+  const body =
+    selectedUuid === new_instance_symbol ? (
       <div>
-        <button children="back" onClick={() => setSelectedUuid(null)} />
+        <NewInstancePage
+          model={Person}
+          detail_view={(p) => <PersonForm person={p} />}
+          cancel={() => setSelectedUuid(null)}
+          save={(new_person) => {
+            setPeople((oldPeople) => [new_person, ...oldPeople]);
+            setSelectedUuid(new_person.id);
+          }}
+        />
       </div>
+    ) : !selected ? (
+      <div>
+        <Row
+          c={[
+            <p>Click any rows below to edit them</p>,
+            <button
+              children="New +"
+              onClick={() => setSelectedUuid(new_instance_symbol)}
+            />,
+          ]}
+        />
+        <AdminTable
+          model={Person}
+          instances={people}
+          onSelected={(person) => setSelectedUuid(person.id)}
+        />
+      </div>
+    ) : (
+      <div>
+        <div>
+          <button children="back" onClick={() => setSelectedUuid(null)} />
+        </div>
 
-      <EditableCrud
-        model={Person}
-        detail_view={(p) => <PersonForm person={p} />}
-        instance={selected}
-        update={(updated_person) => {
-          setPeople((oldPeople) =>
-            oldPeople.map((person) =>
-              person.id === updated_person.id ? updated_person : person
-            )
-          );
-        }}
-      />
-    </div>
-  );
+        <EditableCrud
+          model={Person}
+          detail_view={(p) => <PersonForm person={p} />}
+          instance={selected}
+          update={(updated_person) => {
+            setPeople((oldPeople) =>
+              oldPeople.map((person) =>
+                person.id === updated_person.id ? updated_person : person
+              )
+            );
+          }}
+        />
+      </div>
+    );
 
   return (
     <div>
