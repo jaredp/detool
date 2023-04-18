@@ -135,10 +135,10 @@ const Person = {
   linkedin: Optional(URL),
 };
 
-const PersonDetail: React.FC<{
-  instance: CrudUI<typeof Person>;
+const PersonForm: React.FC<{
+  person: CrudUI<typeof Person>;
 }> = (props) => {
-  const person = props.instance;
+  const { person } = props;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Row c={[person.firstName, person.lastName]} />
@@ -148,51 +148,63 @@ const PersonDetail: React.FC<{
   );
 };
 
-const DetailPage: React.FC<{
-  instance: InstanceOf<typeof Person>;
-  update: (newInstance: InstanceOf<typeof Person>) => void;
-}> = (props) => {
-  const [dirtyInstance, setDirtyInstance] = React.useState<InstanceOf<
-    typeof Person
-  > | null>(null);
-  const person: CrudUI<typeof Person> =
-    dirtyInstance === null
-      ? view_ui(Person, props.instance)
-      : edit_ui(Person, dirtyInstance, setDirtyInstance);
+const EditableCrud = <M extends ModelBase>(props: {
+  model: M;
+  detail_view: (crud_ctrls: CrudUI<M>) => React.ReactNode;
+  instance: InstanceOf<M>;
+  update: (newInstance: InstanceOf<M>) => void;
+}): React.ReactElement => {
+  const { model, detail_view } = props;
 
-  return (
+  const layout = (slots: {
+    crud_ctrls: CrudUI<M>;
+    actions: React.ReactNode;
+  }) => (
     <div>
-      <PersonDetail instance={person} />
+      {detail_view(slots.crud_ctrls)}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        {dirtyInstance === null ? (
-          <React.Fragment>
-            <button
-              children="edit"
-              onClick={() => {
-                setDirtyInstance(props.instance);
-              }}
-            />
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            <button
-              children="cancel"
-              onClick={() => {
-                setDirtyInstance(null);
-              }}
-            />
-            <button
-              children="save"
-              onClick={() => {
-                props.update(dirtyInstance);
-                setDirtyInstance(null);
-              }}
-            />
-          </React.Fragment>
-        )}
+        {slots.actions}
       </div>
     </div>
   );
+
+  const [dirtyInstance, setDirtyInstance] =
+    React.useState<InstanceOf<M> | null>(null);
+
+  if (dirtyInstance) {
+    return layout({
+      crud_ctrls: edit_ui(model, dirtyInstance, setDirtyInstance),
+      actions: (
+        <React.Fragment>
+          <button
+            children="cancel"
+            onClick={() => {
+              setDirtyInstance(null);
+            }}
+          />
+          <button
+            children="save"
+            onClick={() => {
+              props.update(dirtyInstance);
+              setDirtyInstance(null);
+            }}
+          />
+        </React.Fragment>
+      ),
+    });
+  }
+
+  return layout({
+    crud_ctrls: view_ui(model, props.instance),
+    actions: (
+      <button
+        children="edit"
+        onClick={() => {
+          setDirtyInstance(props.instance);
+        }}
+      />
+    ),
+  });
 };
 
 const AdminTable = <M extends ModelBase>(props: {
@@ -250,7 +262,10 @@ export default function App() {
       <div>
         <button children="back" onClick={() => setSelectedUuid(null)} />
       </div>
-      <DetailPage
+      
+      <EditableCrud
+        model={Person}
+        detail_view={(p) => <PersonForm person={p} />}
         instance={selected}
         update={(updated_person) => {
           setPeople((oldPeople) =>
