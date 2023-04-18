@@ -1,47 +1,9 @@
 import * as React from "react";
-import "./style.css";
-import { faker } from "@faker-js/faker";
 import _ from "lodash";
-import { v4 as uuidv4 } from "uuid";
-
-const Row: React.FC<{ c: React.ReactNode[] }> = (props) => {
-  return (
-    <div style={{ display: "flex", flexDirection: "row", gap: 16 }}>
-      {props.c.map((child, i) => (
-        <div
-          key={i}
-          style={{ flex: 1, /*border: '1px solid #DDD',*/ padding: "1em 0" }}
-          children={child}
-        />
-      ))}
-    </div>
-  );
-};
-
-/*
-
-Model defined in high level types that know there
-1. representation (string, int, etc)
-2. validation (email address, phone number, etc)
-3. default view and edit controls (plain text, <input type="text" />, <input type="email" />)
-4. fake values (faker.js)
-
-*/
-
-interface ModelBase {
-  id: typeof UuidField;
-}
-
-interface Field<T> {
-  dummy_value: () => T;
-  view: (val: T) => React.ReactNode;
-  edit: (val: T, update: (newValue: T) => void) => React.ReactNode;
-  initial_value: () => T;
-}
-
-type FieldType<T> = T extends Field<infer X> ? X : never;
-type InstanceOf<T> = { [Property in keyof T]: FieldType<T[Property]> };
-type CrudUI<T> = { [Property in keyof T]: React.ReactNode };
+import "./style.css";
+import { ModelBase, Field, InstanceOf, CrudUI } from "./api";
+import { Row } from "./components";
+import { Person, PersonForm } from "./models/Person";
 
 function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
@@ -75,69 +37,6 @@ function edit_ui<M extends ModelBase>(
       ) as any
   );
 }
-
-const UuidField: Field<string> = {
-  dummy_value: () => uuidv4(),
-  initial_value: () => uuidv4(),
-  view: (val) => val,
-  edit: (val, _update) => <input type="input" readOnly disabled value={val} />,
-};
-
-const DateField: Field<Date> = {
-  dummy_value: () => new Date(),
-  initial_value: () => new Date(),
-  view: (val) => val.toString(),
-  edit: (val, update) => (
-    <input
-      type="date"
-      value={val.toISOString().slice(0, 10)}
-      onChange={(e) => update(new Date(e.target.value))}
-    />
-  ),
-};
-
-const ShortText: Field<string> = {
-  dummy_value: () => faker.lorem.words(),
-  initial_value: () => "",
-  view: (val) => val,
-  edit: (val, update) => (
-    <input
-      type="text"
-      value={val}
-      onChange={(e) => update(e.target.value)}
-      style={{ width: "100%" }}
-    />
-  ),
-};
-
-const EmailAddress: Field<string> = {
-  dummy_value: () => faker.internet.email(),
-  initial_value: () => "",
-  view: (val) => val,
-  edit: (val, update) => (
-    <input
-      type="email"
-      value={val}
-      onChange={(e) => update(e.target.value)}
-      style={{ width: "100%" }}
-    />
-  ),
-};
-
-const LongText: Field<string> = {
-  dummy_value: () => faker.lorem.paragraph(),
-  initial_value: () => "",
-  view: (val) => val,
-  edit: (val, update) => (
-    <textarea
-      value={val}
-      onChange={(e) => update(e.target.value)}
-      style={{ width: "100%" }}
-    />
-  ),
-};
-
-const Optional = (_ignore: any) => ShortText;
 
 const EditableCrud = <M extends ModelBase>(props: {
   model: M;
@@ -261,32 +160,6 @@ const AdminTable = <M extends ModelBase>(props: {
         })}
       </tbody>
     </table>
-  );
-};
-
-const Person = {
-  id: UuidField,
-  firstName: ShortText,
-  lastName: ShortText,
-  email: EmailAddress,
-  birthday: DateField,
-  bio: LongText,
-
-  twitter: Optional(URL),
-  linkedin: Optional(URL),
-};
-
-const PersonForm: React.FC<{
-  person: CrudUI<typeof Person>;
-}> = (props) => {
-  const { person } = props;
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <Row c={[person.firstName, person.lastName]} />
-      <Row c={[person.email]} />
-      <Row c={[person.bio]} />
-      <Row c={[person.twitter, person.linkedin]} />
-    </div>
   );
 };
 
