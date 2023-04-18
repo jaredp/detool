@@ -2,6 +2,7 @@ import * as React from 'react';
 import './style.css';
 import { faker } from '@faker-js/faker';
 import _ from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
 
 const Row: React.FC<{ c: React.ReactNode[] }> = (props) => {
   return (
@@ -27,40 +28,60 @@ Model defined in high level types that know thier
 
 */
 
+interface ModelBase {
+  id: typeof UuidField;
+}
+
 interface Field<T> {
   dummy_value: () => T;
   view: (T) => React.ReactNode;
-  edit: (T) => React.ReactNode;
+  edit: (val: T, update: (newValue: T) => void) => React.ReactNode;
 }
 
 type FieldType<T> = T extends Field<infer X> ? X : never;
 type InstanceOf<T> = { [Property in keyof T]: FieldType<T[Property]> };
 type CrudUI<T> = { [Property in keyof T]: React.ReactNode };
 
-function dummy_instance<M>(model: M): InstanceOf<M> {
+function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.fromPairs(_.toPairs(model).map(([k, v]) => [k, v.dummy_value()]));
 }
 
-function view_ui<M>(model: M, instance: InstanceOf<M>): CrudUI<M> {
+function view_ui<M extends ModelBase>(
+  model: M,
+  instance: InstanceOf<M>
+): CrudUI<M> {
   return _.fromPairs(
     _.toPairs(model).map(([k, v]) => [k, v.view(instance[k])])
   );
 }
 
-function edit_ui<M>(model: M, instance: InstanceOf<M>): CrudUI<M> {
+function edit_ui<M extends ModelBase>(
+  model: M,
+  instance: InstanceOf<M>,
+  update: (newInstance: InstanceOf<M>) => void
+): CrudUI<M> {
   return _.fromPairs(
-    _.toPairs(model).map(([k, v]) => [k, v.edit(instance[k])])
+    _.toPairs(model).map(([k, v]) => [
+      k,
+      v.edit(instance[k], (newValue) => update({ ...instance, [k]: newValue })),
+    ])
   );
 }
+
+const UuidField: Field<string> = {
+  dummy_value: () => uuidv4(),
+  view: (val) => val,
+  edit: (val, _update) => <input type="input" readOnly disabled value={val} />,
+};
 
 const DateField: Field<Date> = {
   dummy_value: () => new Date(),
   view: (val) => val.toString(),
-  edit: (val) => (
+  edit: (val, update) => (
     <input
       type="date"
       value={val.toISOString().slice(0, 10)}
-      onChange={() => {}}
+      onChange={(e) => update(new Date(e.target.value))}
     />
   ),
 };
@@ -68,11 +89,11 @@ const DateField: Field<Date> = {
 const ShortText: Field<string> = {
   dummy_value: () => faker.lorem.words(),
   view: (val) => val,
-  edit: (val) => (
+  edit: (val, update) => (
     <input
       type="text"
       value={val}
-      onChange={() => {}}
+      onChange={(e) => update(e.target.value)}
       style={{ width: '100%' }}
     />
   ),
@@ -81,11 +102,11 @@ const ShortText: Field<string> = {
 const EmailAddress: Field<string> = {
   dummy_value: () => faker.internet.email(),
   view: (val) => val,
-  edit: (val) => (
+  edit: (val, update) => (
     <input
       type="email"
       value={val}
-      onChange={() => {}}
+      onChange={(e) => update(e.target.value)}
       style={{ width: '100%' }}
     />
   ),
@@ -94,14 +115,19 @@ const EmailAddress: Field<string> = {
 const LongText: Field<string> = {
   dummy_value: () => faker.lorem.paragraph(),
   view: (val) => val,
-  edit: (val) => (
-    <textarea value={val} onChange={() => {}} style={{ width: '100%' }} />
+  edit: (val, update) => (
+    <textarea
+      value={val}
+      onChange={(e) => update(e.target.value)}
+      style={{ width: '100%' }}
+    />
   ),
 };
 
 const Optional = (_ignore: any) => ShortText;
 
 const Person = {
+  id: UuidField,
   firstName: ShortText,
   lastName: ShortText,
   email: EmailAddress,
@@ -114,22 +140,40 @@ const Person = {
 
 const PersonForm: React.FC<{
   instance: InstanceOf<typeof Person>;
+  update: (newInstance: InstanceOf<typeof Person>) => void;
   mode: 'read' | 'edit' | 'create';
 }> = (props) => {
-  const { instance, mode } = props;
-  const render = mode === 'read' ? view_ui : edit_ui;
-  const person: CrudUI<typeof Person> = render(Person, instance);
+  const { mode } = props;
+  const [instance, setInstance] = React.useState(props.instance);
+  const person: CrudUI<typeof Person> =
+    mode === 'read'
+      ? view_ui(Person, instance)
+      : edit_ui(
+          Person,
+          instance,
+          (newInstance) => void setInstance(newInstance)
+        );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Row c={[person.firstName, person.lastName]} />
       <Row c={[person.email]} />
       <Row c={[person.bio]} />
-      <Row c={[person.twitter, person.linkedin, person.birthday]} />
+
+      {mode !== 'read' ? (
+        <Row
+          c={[
+            <button
+              children="save"
+              onClick={() => void props.update(instance)}
+            />,
+          ]}
+        />
+      ) : null}
     </div>
   );
 };
 
-const AdminTable = <M extends {}>(props: {
+const AdminTable = <M extends ModelBase>(props: {
   model: M;
   instances: InstanceOf<M>[];
   onSelected: (instance: InstanceOf<M>) => void;
@@ -160,14 +204,21 @@ const AdminTable = <M extends {}>(props: {
   );
 };
 
-const DetailPage: React.FC<{ person: InstanceOf<typeof Person> }> = (props) => {
+const DetailPage: React.FC<{
+  instance: InstanceOf<typeof Person>;
+  update: (newInstance: InstanceOf<typeof Person>) => void;
+}> = (props) => {
   const [edit, setEdit] = React.useState(false);
   return (
     <div>
       <h1>Hello StackBlitz!</h1>
       <p>Start editing to see some magic happen :)</p>
 
-      <PersonForm instance={props.person} mode={edit ? 'edit' : 'read'} />
+      <PersonForm
+        instance={props.instance}
+        mode={edit ? 'edit' : 'read'}
+        update={props.update}
+      />
       {edit ? (
         <button children="done" onClick={() => setEdit(false)} />
       ) : (
@@ -178,8 +229,8 @@ const DetailPage: React.FC<{ person: InstanceOf<typeof Person> }> = (props) => {
 };
 
 export default function App() {
-  const [instances, setInstances] = React.useState(
-    _.range(100).map((i) => dummy_instance(Person))
+  const [localState, setLocalState] = React.useState(
+    _.range(100).map((_i) => dummy_instance(Person))
   );
   const [selected, setSelected] = React.useState<InstanceOf<
     typeof Person
@@ -189,7 +240,7 @@ export default function App() {
     selected === null ? (
       <AdminTable
         model={Person}
-        instances={instances}
+        instances={localState}
         onSelected={(person) => setSelected(person)}
       />
     ) : (
@@ -197,7 +248,19 @@ export default function App() {
         <div>
           <button children="back" onClick={() => setSelected(null)} />
         </div>
-        <DetailPage person={selected} />
+        <DetailPage
+          instance={selected}
+          update={(newInstance) => {
+            const newLocalState = [];
+            for (const instance of localState) {
+              newLocalState.push(
+                instance.id === newInstance.id ? newInstance : instance
+              );
+            }
+            setLocalState(newLocalState);
+            setSelected(null);
+          }}
+        />
       </div>
     );
 
