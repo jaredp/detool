@@ -123,31 +123,6 @@ const LongText: Field<string> = {
 
 const Optional = (_ignore: any) => ShortText;
 
-const Person = {
-  id: UuidField,
-  firstName: ShortText,
-  lastName: ShortText,
-  email: EmailAddress,
-  birthday: DateField,
-  bio: LongText,
-
-  twitter: Optional(URL),
-  linkedin: Optional(URL),
-};
-
-const PersonForm: React.FC<{
-  person: CrudUI<typeof Person>;
-}> = (props) => {
-  const { person } = props;
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <Row c={[person.firstName, person.lastName]} />
-      <Row c={[person.email]} />
-      <Row c={[person.bio]} />
-    </div>
-  );
-};
-
 const EditableCrud = <M extends ModelBase>(props: {
   model: M;
   detail_view: (crud_ctrls: CrudUI<M>) => React.ReactNode;
@@ -240,6 +215,31 @@ const AdminTable = <M extends ModelBase>(props: {
   );
 };
 
+const Person = {
+  id: UuidField,
+  firstName: ShortText,
+  lastName: ShortText,
+  email: EmailAddress,
+  birthday: DateField,
+  bio: LongText,
+
+  twitter: Optional(URL),
+  linkedin: Optional(URL),
+};
+
+const PersonForm: React.FC<{
+  person: CrudUI<typeof Person>;
+}> = (props) => {
+  const { person } = props;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <Row c={[person.firstName, person.lastName]} />
+      <Row c={[person.email]} />
+      <Row c={[person.bio]} />
+    </div>
+  );
+};
+
 export default function App() {
   const [people, setPeople] = React.useState(
     (_.range(100) as number[]).map((_i) => dummy_instance(Person))
@@ -262,7 +262,7 @@ export default function App() {
       <div>
         <button children="back" onClick={() => setSelectedUuid(null)} />
       </div>
-      
+
       <EditableCrud
         model={Person}
         detail_view={(p) => <PersonForm person={p} />}
