@@ -10,8 +10,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "allowImportingTsExtensions": true,
-    // "strict": true,
+    // "allowImportingTsExtensions": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
@@ -19,9 +18,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "preserve",
+    "strict": false,
+    "incremental": true
   },
   "include": [
-    "src"
+    "src",
+    "src/pages",
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
