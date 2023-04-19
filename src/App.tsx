@@ -113,7 +113,7 @@ const new_instance_symbol = Symbol("new instance");
 
 export default function App() {
   const [people, setPeople] = React.useState(
-    (_.range(100) as number[]).map((_i) => dummy_instance(Person))
+    (_.range(1000) as number[]).map((_i) => dummy_instance(Person))
   );
 
   const [selectedUuid, setSelectedUuid] = React.useState<

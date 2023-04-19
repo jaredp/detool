@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
 import { TextInput, Textarea } from "flowbite-react";
-import { EnvelopeIcon, CalendarIcon } from "@heroicons/react/24/solid";
+import { EnvelopeIcon } from "@heroicons/react/24/solid";
 /*
 
 Model defined in high level types that know there
