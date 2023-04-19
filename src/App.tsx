@@ -3,9 +3,9 @@ import _ from "lodash";
 import { ModelBase, Field, InstanceOf, CrudUI } from "./api";
 import { Row } from "./components/Row";
 import { Person, PersonForm } from "./models/Person";
-import { Footer } from "./components/Footer";
-import { Navbar } from "./components/Navbar";
 import { AppLayout } from "./components/AppLayout";
+import { AdminTable } from "./components/AdminTable";
+import { edit_ui, view_ui } from "./ui";
 
 function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
@@ -15,29 +15,6 @@ function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.mapValues(model, (field: Field<any>) =>
     field.initial_value()
   ) as any;
-}
-
-function view_ui<M extends ModelBase>(
-  model: M,
-  instance: InstanceOf<M>
-): CrudUI<M> {
-  return _.mapValues(model, (field: Field<any>, name) =>
-    field.view(instance[name])
-  );
-}
-
-function edit_ui<M extends ModelBase>(
-  model: M,
-  instance: InstanceOf<M>,
-  update: (newInstance: InstanceOf<M>) => void
-): CrudUI<M> {
-  return _.mapValues(
-    model,
-    (field: Field<any>, name) =>
-      field.edit(instance[name], (newValue) =>
-        update({ ...instance, [name]: newValue })
-      ) as any
-  );
 }
 
 const EditableCrud = <M extends ModelBase>(props: {
@@ -129,39 +106,6 @@ const NewInstancePage = <M extends ModelBase>(props: {
         />
       </div>
     </div>
-  );
-};
-
-const AdminTable = <M extends ModelBase>(props: {
-  model: M;
-  instances: InstanceOf<M>[];
-  onSelected: (instance: InstanceOf<M>) => void;
-}): React.ReactElement => {
-  const { model, instances } = props;
-  const columns = Object.keys(model);
-
-  return (
-    <table>
-      <thead>
-        <tr>
-          {columns.map((c) => (
-            <th key={c} children={c} />
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {instances.map((instance) => {
-          const ui = view_ui(model, instance);
-          return (
-            <tr onClick={() => props.onSelected(instance)} key={instance.id}>
-              {columns.map((c) => (
-                <td key={`${instance.id}/${c}`}>{ui[c]}</td>
-              ))}
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
   );
 };
 
