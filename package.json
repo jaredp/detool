@@ -5,6 +5,8 @@
   "dependencies": {
     "@faker-js/faker": "7.6.0",
     "@types/uuid": "9.0.1",
+    "flowbite": "1.6.5",
+    "flowbite-react": "0.4.3",
     "lodash": "4.17.21",
     "react": "18.2.0",
     "react-dom": "18.2.0",
