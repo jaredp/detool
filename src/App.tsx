@@ -1,6 +1,5 @@
 import * as React from "react";
 import _ from "lodash";
-import "./style.css";
 import { ModelBase, Field, InstanceOf, CrudUI } from "./api";
 import { Row } from "./components";
 import { Person, PersonForm } from "./models/Person";
@@ -228,7 +227,7 @@ export default function App() {
 
   return (
     <div>
-      <h1>detool</h1>
+      <h1 className="text-3xl font-bold underline">detool</h1>
 
       {body}
     </div>
