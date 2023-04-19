@@ -11,7 +11,7 @@ export const AdminTable = <M extends ModelBase>(props: {
   const columns = Object.keys(model);
 
   return (
-    <FlowbiteTable striped>
+    <FlowbiteTable hoverable>
       <FlowbiteTable.Head>
         {columns.map((c) => (
           <FlowbiteTable.HeadCell key={c} children={c} />
@@ -28,7 +28,7 @@ export const AdminTable = <M extends ModelBase>(props: {
               {columns.map((c) => (
                 <FlowbiteTable.Cell
                   key={`${instance.id}/${c}`}
-                  className="whitespace-nowrap"
+                  className="whitespace-nowrap max-w-md overflow-hidden overflow-ellipsis"
                 >
                   {ui[c]}
                 </FlowbiteTable.Cell>

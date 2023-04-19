@@ -6,6 +6,7 @@ import { Person, PersonForm } from "./models/Person";
 import { AppLayout } from "./components/AppLayout";
 import { AdminTable } from "./components/AdminTable";
 import { edit_ui, view_ui } from "./ui";
+import { Button } from "flowbite-react";
 
 function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
@@ -29,11 +30,9 @@ const EditableCrud = <M extends ModelBase>(props: {
     crud_ctrls: CrudUI<M>;
     actions: React.ReactNode;
   }) => (
-    <div>
+    <div className="flex flex-col">
       {detail_view(slots.crud_ctrls)}
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        {slots.actions}
-      </div>
+      <div className="flex justify-end">{slots.actions}</div>
     </div>
   );
 
@@ -44,21 +43,22 @@ const EditableCrud = <M extends ModelBase>(props: {
     return layout({
       crud_ctrls: edit_ui(model, dirtyInstance, setDirtyInstance),
       actions: (
-        <React.Fragment>
-          <button
+        <Button.Group>
+          <Button
+            color="gray"
             children="cancel"
             onClick={() => {
               setDirtyInstance(null);
             }}
           />
-          <button
+          <Button
             children="save"
             onClick={() => {
               props.update(dirtyInstance);
               setDirtyInstance(null);
             }}
           />
-        </React.Fragment>
+        </Button.Group>
       ),
     });
   }
@@ -66,7 +66,7 @@ const EditableCrud = <M extends ModelBase>(props: {
   return layout({
     crud_ctrls: view_ui(model, props.instance),
     actions: (
-      <button
+      <Button
         children="edit"
         onClick={() => {
           setDirtyInstance(props.instance);
@@ -92,13 +92,13 @@ const NewInstancePage = <M extends ModelBase>(props: {
     <div>
       {detail_view(edit_ui(model, dirtyInstance, setDirtyInstance))}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button
+        <Button
           children="cancel"
           onClick={() => {
             props.cancel();
           }}
         />
-        <button
+        <Button
           children="add"
           onClick={() => {
             props.save(dirtyInstance);
@@ -139,7 +139,7 @@ export default function App() {
         <Row
           c={[
             <p>Click any rows below to edit them</p>,
-            <button
+            <Button
               children="New +"
               onClick={() => setSelectedUuid(new_instance_symbol)}
             />,
@@ -154,7 +154,7 @@ export default function App() {
     ) : (
       <div>
         <div>
-          <button children="back" onClick={() => setSelectedUuid(null)} />
+          <Button children="back" onClick={() => setSelectedUuid(null)} />
         </div>
 
         <EditableCrud

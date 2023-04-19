@@ -26,9 +26,9 @@ export const PersonForm: React.FC<{
 }> = (props) => {
   const { person } = props;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className="flex flex-col gap-4">
       <Row c={[person.firstName, person.lastName]} />
-      <Row c={[person.email]} />
+      <Row c={[person.email, person.birthday]} />
       <Row c={[person.bio]} />
       <Row c={[person.twitter, person.linkedin]} />
     </div>

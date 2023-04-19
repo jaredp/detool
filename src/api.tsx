@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
-
+import { TextInput, Textarea } from "flowbite-react";
+import { EnvelopeIcon, CalendarIcon } from "@heroicons/react/24/solid";
 /*
 
 Model defined in high level types that know there
@@ -36,12 +37,13 @@ export const UuidField: Field<string> = {
 export const DateField: Field<Date> = {
   dummy_value: () => new Date(),
   initial_value: () => new Date(),
-  view: (val) => val.toString(),
+  view: (val) => val.toISOString().slice(0, 10),
   edit: (val, update) => (
-    <input
+    <TextInput
       type="date"
       value={val.toISOString().slice(0, 10)}
       onChange={(e) => update(new Date(e.target.value))}
+      className="flex-grow w-full"
     />
   ),
 };
@@ -51,11 +53,11 @@ export const ShortText: Field<string> = {
   initial_value: () => "",
   view: (val) => val,
   edit: (val, update) => (
-    <input
+    <TextInput
       type="text"
       value={val}
       onChange={(e) => update(e.target.value)}
-      style={{ width: "100%" }}
+      className="flex-grow w-full"
     />
   ),
 };
@@ -63,13 +65,18 @@ export const ShortText: Field<string> = {
 export const EmailAddress: Field<string> = {
   dummy_value: () => faker.internet.email(),
   initial_value: () => "",
-  view: (val) => val,
+  view: (val) => (
+    <a href={`mailto:${val}`} className="font-medium text-blue-600 ">
+      {val}
+    </a>
+  ),
   edit: (val, update) => (
-    <input
+    <TextInput
       type="email"
+      rightIcon={EnvelopeIcon}
       value={val}
       onChange={(e) => update(e.target.value)}
-      style={{ width: "100%" }}
+      className="flex-grow w-full"
     />
   ),
 };
@@ -79,10 +86,10 @@ export const LongText: Field<string> = {
   initial_value: () => "",
   view: (val) => val,
   edit: (val, update) => (
-    <textarea
+    <Textarea
       value={val}
       onChange={(e) => update(e.target.value)}
-      style={{ width: "100%" }}
+      className="flex-grow w-full"
     />
   ),
 };
