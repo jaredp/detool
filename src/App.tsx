@@ -1,8 +1,11 @@
 import * as React from "react";
 import _ from "lodash";
 import { ModelBase, Field, InstanceOf, CrudUI } from "./api";
-import { Row } from "./components";
+import { Row } from "./components/Row";
 import { Person, PersonForm } from "./models/Person";
+import { Footer } from "./components/Footer";
+import { Navbar } from "./components/Navbar";
+import { AppLayout } from "./components/AppLayout";
 
 function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
@@ -225,11 +228,5 @@ export default function App() {
       </div>
     );
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold underline">detool</h1>
-
-      {body}
-    </div>
-  );
+  return <AppLayout body={body} />;
 }

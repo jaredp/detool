@@ -7,7 +7,7 @@ import {
   Optional,
   CrudUI,
 } from "../api";
-import { Row } from "../components";
+import { Row } from "../components/Row";
 
 export const Person = {
   id: UuidField,
