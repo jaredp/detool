@@ -22,15 +22,14 @@ export const Person = {
 };
 
 export const PersonForm: React.FC<{
-  person: CrudUI<typeof Person>;
-}> = (props) => {
-  const { person } = props;
+  instance: CrudUI<typeof Person>;
+}> = ({ instance }) => {
   return (
     <div className="flex flex-col gap-4">
-      <Row c={[person.firstName, person.lastName]} />
-      <Row c={[person.email, person.birthday]} />
-      <Row c={[person.bio]} />
-      <Row c={[person.twitter, person.linkedin]} />
+      <Row c={[instance.firstName, instance.lastName]} />
+      <Row c={[instance.email, instance.birthday]} />
+      <Row c={[instance.bio]} />
+      <Row c={[instance.twitter, instance.linkedin]} />
     </div>
   );
 };

@@ -43,7 +43,7 @@ export const DateField: Field<Date> = {
       type="date"
       value={val.toISOString().slice(0, 10)}
       onChange={(e) => update(new Date(e.target.value))}
-      className="flex-grow w-full"
+      className="w-full flex-grow"
     />
   ),
 };
@@ -57,7 +57,7 @@ export const ShortText: Field<string> = {
       type="text"
       value={val}
       onChange={(e) => update(e.target.value)}
-      className="flex-grow w-full"
+      className="w-full flex-grow"
     />
   ),
 };
@@ -73,10 +73,10 @@ export const EmailAddress: Field<string> = {
   edit: (val, update) => (
     <TextInput
       type="email"
-      rightIcon={EnvelopeIcon}
+      rightIcon={EnvelopeIcon as any}
       value={val}
       onChange={(e) => update(e.target.value)}
-      className="flex-grow w-full"
+      className="w-full flex-grow"
     />
   ),
 };
@@ -89,7 +89,7 @@ export const LongText: Field<string> = {
     <Textarea
       value={val}
       onChange={(e) => update(e.target.value)}
-      className="flex-grow w-full"
+      className="w-full flex-grow"
     />
   ),
 };

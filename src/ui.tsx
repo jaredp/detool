@@ -5,8 +5,8 @@ export function view_ui<M extends ModelBase>(
   model: M,
   instance: InstanceOf<M>
 ): CrudUI<M> {
-  return _.mapValues(model, (field: Field<any>, name) => (
-    <div className="flex-grow w-full">{field.view(instance[name])}</div>
+  return _.mapValues(model, (field: Field<any>, name: string) => (
+    <div className="w-full flex-grow">{field.view((instance as any)[name])}</div>
   ));
 }
 
@@ -17,8 +17,8 @@ export function edit_ui<M extends ModelBase>(
 ): CrudUI<M> {
   return _.mapValues(
     model,
-    (field: Field<any>, name) =>
-      field.edit(instance[name], (newValue) =>
+    (field: Field<any>, name: string) =>
+      field.edit((instance as any)[name], (newValue) =>
         update({ ...instance, [name]: newValue })
       ) as any
   );

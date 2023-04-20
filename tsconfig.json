@@ -19,7 +19,9 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-    "strict": false,
+    "strict": true,
+       "strictNullChecks": true,
+
     "incremental": true
   },
   "include": [

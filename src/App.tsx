@@ -92,7 +92,7 @@ const NewInstancePage = <M extends ModelBase>(props: {
   );
   return (
     <div className="flex flex-col gap-4 ">
-      <h3 className="text-xl font-medium text-gray-900 pb-2">
+      <h3 className="pb-2 text-xl font-medium text-gray-900">
         Create new instance
       </h3>
       {detail_view(edit_ui(model, dirtyInstance, setDirtyInstance))}
@@ -126,22 +126,20 @@ export default function App() {
       onClose={() => setSelectedUuid(null)}
       children={
         selectedUuid === new_instance_symbol ? (
-          <>
             <NewInstancePage
               model={Person}
-              detail_view={(p) => <PersonForm person={p} />}
+              detail_view={(p) => <PersonForm instance={p} />}
               cancel={() => setSelectedUuid(null)}
               save={(new_person) => {
                 setPeople((oldPeople) => [new_person, ...oldPeople]);
                 setSelectedUuid(new_person.id);
               }}
             />
-          </>
         ) : (
           <EditableCrud
             model={Person}
-            detail_view={(p) => <PersonForm person={p} />}
-            instance={selected}
+            detail_view={(p) => <PersonForm instance={p} />}
+            instance={selected!}
             update={(updated_person) => {
               setPeople((oldPeople) =>
                 oldPeople.map((person) =>

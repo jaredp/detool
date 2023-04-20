@@ -1,5 +1,6 @@
+// @ts-check
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
     'node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}'
@@ -9,3 +10,4 @@ module.exports = {
   },
   plugins: [require('flowbite/plugin')],
 };
+module.exports = config;

@@ -15,13 +15,14 @@ function App() {
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
         }}
       >
         <PulseMultiple width={48} height={48} />
-        <p style={{color: 'gray'}}>Loading...</p>
+        <p style={{ color: "gray" }}>Loading...</p>
       </div>
     );
   }
