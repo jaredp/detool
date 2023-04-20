@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
 import { TextInput, Textarea } from "flowbite-react";
 import { EnvelopeIcon } from "@heroicons/react/24/solid";
+import _ from "lodash";
 /*
 
 Model defined in high level types that know there
@@ -95,3 +96,13 @@ export const LongText: Field<string> = {
 };
 
 export const Optional = (_ignore: any) => ShortText;
+
+export function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
+  return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
+}
+
+export function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
+  return _.mapValues(model, (field: Field<any>) =>
+    field.initial_value()
+  ) as any;
+}

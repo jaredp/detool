@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
 import { InMemoryModelStore } from "../../stores/in_memory";
-import { InMemoryServer } from "../../server";
+import { InMemoryServer } from "../../db";
 import { InstanceOf } from "../../../api";
 
 const server = InMemoryServer.instance;

@@ -1,6 +1,13 @@
 import * as React from "react";
 import _ from "lodash";
-import { ModelBase, Field, InstanceOf, CrudUI } from "./api";
+import {
+  ModelBase,
+  Field,
+  InstanceOf,
+  CrudUI,
+  blank_instance,
+  dummy_instance,
+} from "./api";
 import { Row } from "./components/Row";
 import { Person, PersonForm } from "./models/Person";
 import { AppLayout } from "./components/AppLayout";
@@ -9,16 +16,6 @@ import { edit_ui, view_ui } from "./ui";
 import { Button } from "flowbite-react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { Modal } from "./components/Modal";
-
-function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
-}
-
-function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.mapValues(model, (field: Field<any>) =>
-    field.initial_value()
-  ) as any;
-}
 
 const EditableCrud = <M extends ModelBase>(props: {
   model: M;
@@ -109,15 +106,20 @@ const NewInstancePage = <M extends ModelBase>(props: {
 };
 
 const new_instance_symbol = Symbol("new instance");
+import { trpc } from "./utils/trpc";
+import { Loading } from "./components/Loading";
 
 export default function App() {
-  const [people, setPeople] = React.useState(
-    (_.range(1000) as number[]).map((_i) => dummy_instance(Person))
-  );
-
   const [selectedUuid, setSelectedUuid] = React.useState<
     string | typeof new_instance_symbol | null
   >(null);
+  const result = trpc.model_instance.list.useQuery();
+
+  if (!result.data) {
+    return <Loading />;
+  }
+
+  const people: InstanceOf<typeof Person>[] = result.data as any;
   const selected = people.find((p) => p.id === selectedUuid);
 
   const modal = !selectedUuid ? null : (
@@ -126,26 +128,29 @@ export default function App() {
       onClose={() => setSelectedUuid(null)}
       children={
         selectedUuid === new_instance_symbol ? (
-            <NewInstancePage
-              model={Person}
-              detail_view={(p) => <PersonForm instance={p} />}
-              cancel={() => setSelectedUuid(null)}
-              save={(new_person) => {
-                setPeople((oldPeople) => [new_person, ...oldPeople]);
-                setSelectedUuid(new_person.id);
-              }}
-            />
+          <NewInstancePage
+            model={Person}
+            detail_view={(p) => <PersonForm instance={p} />}
+            cancel={() => setSelectedUuid(null)}
+            save={(new_person) => {
+              //   setPeople((oldPeople) => [new_person, ...oldPeople]);
+              setSelectedUuid(new_person.id);
+              result.refetch();
+            }}
+          />
         ) : (
           <EditableCrud
             model={Person}
             detail_view={(p) => <PersonForm instance={p} />}
             instance={selected!}
             update={(updated_person) => {
-              setPeople((oldPeople) =>
-                oldPeople.map((person) =>
-                  person.id === updated_person.id ? updated_person : person
-                )
-              );
+              //   setPeople((oldPeople) =>
+              //     oldPeople.map((person) =>
+              //       person.id === updated_person.id ? updated_person : person
+              //     )
+              //   );
+
+              result.refetch();
             }}
           />
         )
@@ -154,19 +159,20 @@ export default function App() {
   );
 
   const body = (
-    <div>
-      <Row
-        c={[
-          <p>Click any rows below to edit them</p>,
-          <Button
-            color="success"
-            onClick={() => setSelectedUuid(new_instance_symbol)}
-          >
-            {"Add"}
-            <PlusIcon className="ml-2 h-4 w-4" />
-          </Button>,
-        ]}
-      />
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-end">
+        <span className="flex-grow text-sm text-gray-500 ">
+          Loaded {people.length} instances. Click any rows below to edit them
+        </span>
+        <Button
+          color="success"
+          size={"xs"}
+          onClick={() => setSelectedUuid(new_instance_symbol)}
+        >
+          {"Add"}
+          <PlusIcon className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
       <AdminTable
         model={Person}
         instances={people}
