@@ -1,5 +1,5 @@
 import * as React from "react";
-import _ from "lodash";
+import _, { create, update } from "lodash";
 import {
   ModelBase,
   Field,
@@ -22,6 +22,7 @@ const EditableCrud = <M extends ModelBase>(props: {
   detail_view: (crud_ctrls: CrudUI<M>) => React.ReactNode;
   instance: InstanceOf<M>;
   update: (newInstance: InstanceOf<M>) => void;
+  delete: () => void;
 }): React.ReactElement => {
   const { model, detail_view } = props;
 
@@ -66,12 +67,26 @@ const EditableCrud = <M extends ModelBase>(props: {
   return layout({
     crud_ctrls: view_ui(model, props.instance),
     actions: (
-      <Button
-        children="edit"
-        onClick={() => {
-          setDirtyInstance(props.instance);
-        }}
-      />
+      <Button.Group>
+        <Button
+          color="red"
+          children="delete"
+          onClick={() => {
+            const result = confirm(
+              "Are you sure you want to delete this instance?"
+            );
+            if (result) {
+              props.delete();
+            }
+          }}
+        />
+        <Button
+          children="edit"
+          onClick={() => {
+            setDirtyInstance(props.instance);
+          }}
+        />
+      </Button.Group>
     ),
   });
 };
@@ -114,6 +129,9 @@ export default function App() {
     string | typeof new_instance_symbol | null
   >(null);
   const result = trpc.model_instance.list.useQuery();
+  const createHook = trpc.model_instance.create.useMutation();
+  const updateHook = trpc.model_instance.update.useMutation();
+  const deleteHook = trpc.model_instance.delete.useMutation();
 
   if (!result.data) {
     return <Loading />;
@@ -132,9 +150,11 @@ export default function App() {
             model={Person}
             detail_view={(p) => <PersonForm instance={p} />}
             cancel={() => setSelectedUuid(null)}
-            save={(new_person) => {
-              //   setPeople((oldPeople) => [new_person, ...oldPeople]);
-              setSelectedUuid(new_person.id);
+            save={async (new_person) => {
+              await createHook.mutate({
+                data: new_person,
+              });
+              setSelectedUuid(null);
               result.refetch();
             }}
           />
@@ -143,14 +163,20 @@ export default function App() {
             model={Person}
             detail_view={(p) => <PersonForm instance={p} />}
             instance={selected!}
-            update={(updated_person) => {
-              //   setPeople((oldPeople) =>
-              //     oldPeople.map((person) =>
-              //       person.id === updated_person.id ? updated_person : person
-              //     )
-              //   );
-
+            update={async (updated_person) => {
+              await updateHook.mutate({
+                id: updated_person.id,
+                data: updated_person,
+              });
+              setSelectedUuid(null);
               result.refetch();
+            }}
+            delete={async () => {
+                await deleteHook.mutate({
+                    id: selected!.id,
+                });
+                setSelectedUuid(null);
+                result.refetch();
             }}
           />
         )
