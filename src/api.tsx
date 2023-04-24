@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { TextInput, Textarea } from "flowbite-react";
 import { EnvelopeIcon } from "@heroicons/react/24/solid";
 import _ from "lodash";
+
 /*
 
 Model defined in high level types that know there
@@ -74,7 +75,7 @@ export const EmailAddress: Field<string> = {
   edit: (val, update) => (
     <TextInput
       type="email"
-      rightIcon={EnvelopeIcon as any}
+      icon={() => <EnvelopeIcon />}
       value={val}
       onChange={(e) => update(e.target.value)}
       className="w-full flex-grow"
@@ -95,7 +96,12 @@ export const LongText: Field<string> = {
   ),
 };
 
-export const Optional = (_ignore: any) => ShortText;
+export const Optional = <T, F extends Field<T>>(field: F) => ({
+  dummy_value: field.dummy_value,
+  initial_value: field.initial_value,
+  view: field.view,
+  edit: field.edit,
+});
 
 export function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
   return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;

@@ -6,9 +6,7 @@ export function view_ui<M extends ModelBase>(
   instance: InstanceOf<M>
 ): CrudUI<M> {
   return _.mapValues(model, (field: Field<any>, name: string) => (
-    <div className="w-full flex-grow">
-      {field.view((instance as any)[name])}
-    </div>
+    <div className="w-full flex-grow">{field.view(instance[name])}</div>
   ));
 }
 

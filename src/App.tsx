@@ -137,7 +137,7 @@ export default function App() {
     return <Loading />;
   }
 
-  const people: InstanceOf<typeof Person>[] = result.data as any;
+  const people = result.data as InstanceOf<typeof Person>[];
   const selected = people.find((p) => p.id === selectedUuid);
 
   const modal = !selectedUuid ? null : (
@@ -172,11 +172,11 @@ export default function App() {
               result.refetch();
             }}
             delete={async () => {
-                await deleteHook.mutate({
-                    id: selected!.id,
-                });
-                setSelectedUuid(null);
-                result.refetch();
+              await deleteHook.mutate({
+                id: selected!.id,
+              });
+              setSelectedUuid(null);
+              result.refetch();
             }}
           />
         )

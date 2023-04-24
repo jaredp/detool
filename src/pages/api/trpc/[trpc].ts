@@ -7,6 +7,6 @@ import { appRouter } from "../../../server/api/routers/root";
 
 // export API handler
 export default createNextApiHandler({
-  router: appRouter as any,
+  router: appRouter,
   createContext: () => ({}),
 });
