@@ -1,37 +1,12 @@
 import { faker } from "@faker-js/faker";
-import { v4 as uuidv4 } from "uuid";
+import { LinkIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
 import { TextInput, Textarea } from "flowbite-react";
-import { EnvelopeIcon, LinkIcon } from "@heroicons/react/24/solid";
-import _ from "lodash";
-
-/*
-
-Model defined in high level types that know there
-1. representation (string, int, etc)
-2. validation (email address, phone number, etc)
-3. default view and edit controls (plain text, <input type="text" />, <input type="email" />)
-4. fake values (faker.js)
-
-*/
-
-export interface ModelBase {
-  id: typeof UuidField;
-}
-
-export interface Field<T> {
-  dummy_value: () => T;
-  view: (val: T) => React.ReactNode;
-  edit: (val: T, update: (newValue: T) => void) => React.ReactNode;
-  initial_value: () => T;
-}
-
-export type FieldType<T> = T extends Field<infer X> ? X : never;
-export type InstanceOf<T> = { [Property in keyof T]: FieldType<T[Property]> };
-export type CrudUI<T> = { [Property in keyof T]: React.ReactNode };
+import { Field } from "./model";
+import { v4 } from "uuid";
 
 export const UuidField: Field<string> = {
-  dummy_value: () => uuidv4(),
-  initial_value: () => uuidv4(),
+  dummy_value: () => v4(),
+  initial_value: () => v4(),
   view: (val) => val,
   edit: (val, _update) => <input type="input" readOnly disabled value={val} />,
 };
@@ -75,7 +50,7 @@ export const UrlField: Field<string> = {
   edit: (val, update) => (
     <TextInput
       type="url"
-      icon={() => <LinkIcon />}
+      icon={LinkIcon as any}
       value={val}
       onChange={(e) => update(e.target.value)}
       className="w-full flex-grow"
@@ -94,7 +69,7 @@ export const EmailAddress: Field<string> = {
   edit: (val, update) => (
     <TextInput
       type="email"
-      icon={() => <EnvelopeIcon />}
+      icon={EnvelopeIcon as any}
       value={val}
       onChange={(e) => update(e.target.value)}
       className="w-full flex-grow"
@@ -117,15 +92,3 @@ export const LongText: Field<string> = {
 
 // TODO add null type
 export const Optional = <T,>(field: Field<T>): Field<T> => field;
-
-export function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.mapValues(model, (field: Field<any>) =>
-    field.dummy_value()
-  ) as InstanceOf<M>;
-}
-
-export function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.mapValues(model, (field: Field<any>) =>
-    field.initial_value()
-  ) as any;
-}

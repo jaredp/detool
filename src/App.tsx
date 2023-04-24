@@ -1,18 +1,9 @@
 import * as React from "react";
-import _, { create, update } from "lodash";
-import {
-  ModelBase,
-  Field,
-  InstanceOf,
-  CrudUI,
-  blank_instance,
-  dummy_instance,
-} from "./api";
-import { Row } from "./components/Row";
+import _ from "lodash";
 import { Person, PersonForm } from "./models/Person";
 import { AppLayout } from "./components/AppLayout";
 import { AdminTable } from "./components/AdminTable";
-import { edit_ui, view_ui } from "./ui";
+import { blank_instance, edit_ui, view_ui } from "./detool-api/ui";
 import { Button } from "flowbite-react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { Modal } from "./components/Modal";
@@ -65,7 +56,9 @@ const EditableCrud = <M extends ModelBase>(props: {
   }
 
   return layout({
-    crud_ctrls: view_ui(model, props.instance),
+    crud_ctrls: view_ui(model, props.instance, {
+      className: "w-full flex-grow",
+    }),
     actions: (
       <Button.Group>
         <Button
@@ -123,6 +116,7 @@ const NewInstancePage = <M extends ModelBase>(props: {
 const new_instance_symbol = Symbol("new instance");
 import { trpc } from "./utils/trpc";
 import { Loading } from "./components/Loading";
+import { ModelBase, CrudUI, InstanceOf } from "./detool-api/model";
 
 export default function App() {
   const [selectedUuid, setSelectedUuid] = React.useState<

@@ -1,7 +1,8 @@
 import { ModelStore } from "./stores/api";
-import { CrudUI, ModelBase, dummy_instance } from "../api";
 import { Person, PersonForm } from "../models/Person";
 import { InMemoryModelStore } from "./stores/in_memory";
+import { ModelBase, CrudUI } from "../detool-api/model";
+import { dummy_instance } from "../detool-api/ui";
 
 export class InMemoryServer {
   private static _instance: InMemoryServer;

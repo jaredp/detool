@@ -1,5 +1,5 @@
-import { ModelBase, InstanceOf } from "../api";
-import { view_ui } from "../ui";
+import { InstanceOf, ModelBase } from "../detool-api/model";
+import { view_ui } from "../detool-api/ui";
 import { Table as FlowbiteTable } from "flowbite-react";
 
 export const AdminTable = <M extends ModelBase>(props: {
@@ -19,7 +19,9 @@ export const AdminTable = <M extends ModelBase>(props: {
       </FlowbiteTable.Head>
       <FlowbiteTable.Body className="divide-y">
         {instances.map((instance) => {
-          const ui = view_ui(model, instance);
+          const ui = view_ui(model, instance, {
+            className: "w-full flex-grow",
+          });
           return (
             <FlowbiteTable.Row
               onClick={() => props.onSelected(instance)}

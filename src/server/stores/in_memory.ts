@@ -1,6 +1,6 @@
 // singleton class that stores all models
 
-import { InstanceOf, ModelBase } from "../../api";
+import { InstanceOf, ModelBase } from "../../detool-api/api";
 import { ModelStore } from "./api";
 
 /** Model store used for testing purposes. Does not persist data. */

@@ -1,4 +1,4 @@
-import { InstanceOf, ModelBase } from "../../api";
+import { InstanceOf, ModelBase } from "../../detool-api/api";
 
 export interface ModelStore<M extends ModelBase> {
   create(instance: InstanceOf<M>): InstanceOf<M> | null;
