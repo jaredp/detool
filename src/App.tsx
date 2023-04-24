@@ -137,7 +137,7 @@ export default function App() {
     return <Loading />;
   }
 
-  const people = result.data as InstanceOf<typeof Person>[];
+  const people = result.data;
   const selected = people.find((p) => p.id === selectedUuid);
 
   const modal = !selectedUuid ? null : (

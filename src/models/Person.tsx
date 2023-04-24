@@ -6,6 +6,7 @@ import {
   LongText,
   Optional,
   CrudUI,
+  UrlField,
 } from "../api";
 import { Row } from "../components/Row";
 
@@ -17,8 +18,8 @@ export const Person = {
   birthday: DateField,
   bio: LongText,
 
-  twitter: Optional(URL),
-  linkedin: Optional(URL),
+  twitter: Optional(UrlField),
+  linkedin: Optional(UrlField),
 };
 
 export const PersonForm: React.FC<{

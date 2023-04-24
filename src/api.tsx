@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
 import { TextInput, Textarea } from "flowbite-react";
-import { EnvelopeIcon } from "@heroicons/react/24/solid";
+import { EnvelopeIcon, LinkIcon } from "@heroicons/react/24/solid";
 import _ from "lodash";
 
 /*
@@ -64,6 +64,25 @@ export const ShortText: Field<string> = {
   ),
 };
 
+export const UrlField: Field<string> = {
+  dummy_value: () => faker.internet.url(),
+  initial_value: () => "",
+  view: (val) => (
+    <a href={val} className="font-medium text-blue-600 ">
+      {val}
+    </a>
+  ),
+  edit: (val, update) => (
+    <TextInput
+      type="url"
+      icon={() => <LinkIcon />}
+      value={val}
+      onChange={(e) => update(e.target.value)}
+      className="w-full flex-grow"
+    />
+  ),
+};
+
 export const EmailAddress: Field<string> = {
   dummy_value: () => faker.internet.email(),
   initial_value: () => "",
@@ -96,15 +115,13 @@ export const LongText: Field<string> = {
   ),
 };
 
-export const Optional = <T, F extends Field<T>>(field: F) => ({
-  dummy_value: field.dummy_value,
-  initial_value: field.initial_value,
-  view: field.view,
-  edit: field.edit,
-});
+// TODO add null type
+export const Optional = <T,>(field: Field<T>): Field<T> => field;
 
 export function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return _.mapValues(model, (field: Field<any>) => field.dummy_value()) as any;
+  return _.mapValues(model, (field: Field<any>) =>
+    field.dummy_value()
+  ) as InstanceOf<M>;
 }
 
 export function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
