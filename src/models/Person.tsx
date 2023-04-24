@@ -1,6 +1,5 @@
 import { Row } from "../components/Row";
 import {
-  UuidField,
   ShortText,
   EmailAddress,
   DateField,
@@ -10,8 +9,7 @@ import {
 } from "../detool-api/field";
 import { Model, CrudUI } from "../detool-api/model";
 
-export const Person = Model({
-  id: UuidField,
+export const Person = Model("Person", {
   firstName: ShortText,
   lastName: ShortText,
   email: EmailAddress,
@@ -21,13 +19,6 @@ export const Person = Model({
   twitter: Optional(UrlField),
   linkedin: Optional(UrlField),
 });
-
-/// server and client
-// Person.list()
-// Person.create({ ... })
-// Person.get(id)
-// Person.update(id, { ... })
-// Person.delete(id)
 
 export const PersonForm: React.FC<{
   instance: CrudUI<typeof Person>;

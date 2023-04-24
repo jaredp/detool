@@ -169,8 +169,8 @@ export default function App() {
               await deleteHook.mutate({
                 id: selected!.id,
               });
-              setSelectedUuid(null);
               result.refetch();
+              setSelectedUuid(null);
             }}
           />
         )
