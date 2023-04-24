@@ -1,42 +1,18 @@
 import { Sidebar as FlowbiteSidebar } from "flowbite-react";
 import { Badge } from "flowbite-react";
-import {
-  ChartPieIcon,
-  ViewfinderCircleIcon,
-  InboxIcon,
-  UserIcon,
-  ShoppingBagIcon,
-  ArrowRightIcon,
-  TableCellsIcon,
-} from "@heroicons/react/24/solid";
+import { TableCellsIcon } from "@heroicons/react/24/solid";
 
-export const Sidebar: React.FC<{}> = (props) => {
+export const Sidebar: React.FC<{ models: string[] }> = (props) => {
   return (
     <div className="w-fit">
       <FlowbiteSidebar aria-label="FlowbiteSidebar with call to action button example">
         <FlowbiteSidebar.Items>
           <FlowbiteSidebar.ItemGroup>
-            <FlowbiteSidebar.Item href="#" icon={ChartPieIcon}>
-              Dashboard
-            </FlowbiteSidebar.Item>
-            <FlowbiteSidebar.Item href="#" icon={ViewfinderCircleIcon}>
-              Kanban
-            </FlowbiteSidebar.Item>
-            <FlowbiteSidebar.Item href="#" icon={InboxIcon}>
-              Inbox
-            </FlowbiteSidebar.Item>
-            <FlowbiteSidebar.Item href="#" icon={UserIcon}>
-              Users
-            </FlowbiteSidebar.Item>
-            <FlowbiteSidebar.Item href="#" icon={ShoppingBagIcon}>
-              Products
-            </FlowbiteSidebar.Item>
-            <FlowbiteSidebar.Item href="#" icon={ArrowRightIcon}>
-              Sign In
-            </FlowbiteSidebar.Item>
-            <FlowbiteSidebar.Item href="#" icon={TableCellsIcon}>
-              Sign Up
-            </FlowbiteSidebar.Item>
+            {props.models.map((model) => (
+              <FlowbiteSidebar.Item href="#" icon={TableCellsIcon}>
+                {model}
+              </FlowbiteSidebar.Item>
+            ))}
           </FlowbiteSidebar.ItemGroup>
         </FlowbiteSidebar.Items>
         <FlowbiteSidebar.CTA>
