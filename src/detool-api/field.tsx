@@ -2,11 +2,21 @@ import { faker } from "@faker-js/faker";
 import { LinkIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
 import { TextInput, Textarea } from "flowbite-react";
 import { Field } from "./model";
-import { v4 } from "uuid";
+import nodeCrypto from "node:crypto";
+
+const randomUUID = (): string => {
+  if (typeof nodeCrypto?.randomUUID === "function") {
+    return nodeCrypto.randomUUID();
+  }
+  if (typeof globalThis?.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return faker.datatype.uuid();
+};
 
 export const UuidField: Field<string> = {
-  dummy_value: () => v4(),
-  initial_value: () => v4(),
+  dummy_value: () => randomUUID(),
+  initial_value: () => randomUUID(),
   view: (val) => val,
   edit: (val, _update) => <input type="input" readOnly disabled value={val} />,
 };

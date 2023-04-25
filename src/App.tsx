@@ -183,7 +183,8 @@ export default function App() {
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
         <span className="flex-grow text-sm text-gray-500 ">
-          Loaded {people.length} instances. Click any rows below to edit them
+          {people.length} instances loaded. <br />
+          Click any rows below to edit them
         </span>
         <Button
           color="success"
