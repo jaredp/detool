@@ -2,18 +2,15 @@ import { Person } from "./../../../models/Person";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
-import { InMemoryModelStore } from "../../stores/in_memory";
-import { InMemoryServer } from "../../db";
-import { InstanceOf } from "../../../detool-api/api";
+import { InstanceOf } from "../../../detool-api/model";
+import { ModelStore } from "../../stores/api";
 
-const server = InMemoryServer.instance;
-const personModelStore = server.getModelStore("Person") as InMemoryModelStore<
-  typeof Person
->;
+const getModelStore: () => ModelStore<typeof Person> = () =>
+  (Person as any).__serverApi;
 
 export const modelInstance = router({
   list: publicProcedure.query(() => {
-    return personModelStore.list();
+    return getModelStore().list();
   }),
   create: publicProcedure
     .input(
@@ -24,7 +21,7 @@ export const modelInstance = router({
         .required()
     )
     .mutation(async ({ input }) => {
-      return personModelStore.create(input.data);
+      return getModelStore().create(input.data);
     }),
   getById: publicProcedure
     .input(
@@ -35,7 +32,7 @@ export const modelInstance = router({
         .required()
     )
     .query(async ({ input }) => {
-      return personModelStore.getById(input.id);
+      return getModelStore().getById(input.id);
     }),
   update: publicProcedure
     .input(
@@ -45,7 +42,7 @@ export const modelInstance = router({
       })
     )
     .mutation(async ({ input }) => {
-      return personModelStore.update(input.id, input.data);
+      return getModelStore().update(input.id, input.data);
     }),
   delete: publicProcedure
     .input(
@@ -56,6 +53,6 @@ export const modelInstance = router({
         .required()
     )
     .mutation(async ({ input }) => {
-      return personModelStore.delete(input.id);
+      return getModelStore().delete(input.id);
     }),
 });
