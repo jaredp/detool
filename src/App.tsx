@@ -1,5 +1,4 @@
 import * as React from "react";
-import _ from "lodash";
 import { Person, PersonForm } from "./models/Person";
 import { AppLayout } from "./components/AppLayout";
 import { AdminTable } from "./components/AdminTable";

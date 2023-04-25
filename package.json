@@ -12,7 +12,6 @@
     "@trpc/server": "10.20.0",
     "flowbite": "1.6.5",
     "flowbite-react": "0.4.3",
-    "lodash": "4.17.21",
     "next": "13.3.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -29,7 +28,6 @@
     "fix": "next lint --fix"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.194",
     "@types/node": "18.15.11",
     "@types/react": "18.0.37",
     "@types/react-dom": "18.0.11",
