@@ -9,7 +9,7 @@ export const Sidebar: React.FC<{ models: string[] }> = (props) => {
         <FlowbiteSidebar.Items>
           <FlowbiteSidebar.ItemGroup>
             {props.models.map((model) => (
-              <FlowbiteSidebar.Item href="#" icon={TableCellsIcon}>
+              <FlowbiteSidebar.Item href="#" icon={TableCellsIcon} key={model}>
                 {model}
               </FlowbiteSidebar.Item>
             ))}
