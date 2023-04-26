@@ -1,5 +1,5 @@
-import { modelInstance } from "./../server/api/routers/model_instance";
-import { InMemoryModelStore } from "../server/stores/InMemoryModelStore";
+// import { InMemoryModelStore } from "../server/stores/InMemoryModelStore";
+import { SqliteModelStore } from "../server/stores/SqliteModelStore";
 import { ModelBase, ModelAPI, InstanceOf } from "./model";
 
 export const getApiForModel = <M extends ModelBase>(
@@ -9,7 +9,7 @@ export const getApiForModel = <M extends ModelBase>(
   if (typeof window === "undefined") {
     console.log("getApiForModel", name);
 
-    const store = new InMemoryModelStore(model, 10);
+    const store = new SqliteModelStore(model, 10);
     const modelApi = {
       list: async () => {
         console.log("list", name);

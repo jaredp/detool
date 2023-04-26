@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { LinkIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
 import { TextInput, Textarea } from "flowbite-react";
 import { Field } from "./model";
-import nodeCrypto from "node:crypto";
+import nodeCrypto from "crypto";
 
 const randomUUID = (): string => {
   if (typeof nodeCrypto?.randomUUID === "function") {
