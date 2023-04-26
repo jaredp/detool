@@ -6,12 +6,10 @@ import { ModelStore } from "./api";
 
 /** Model store used for testing purposes. Does not persist data. */
 export class InMemoryModelStore<M extends ModelBase> implements ModelStore<M> {
-  private model: M;
-  private seedCount: number;
+  /** Use JS Array as a store for now */
+  private instances: InstanceOf<M>[] = [];
 
   constructor(model: M, seedCount: number) {
-    this.model = model;
-    this.seedCount = seedCount;
     if (seedCount < 0) {
       throw new Error("seedCount must be >= 0");
     }
@@ -21,8 +19,6 @@ export class InMemoryModelStore<M extends ModelBase> implements ModelStore<M> {
     console.log("InMemoryModelStore created");
   }
 
-  /** Use JS Array as a store for now */
-  private instances: InstanceOf<M>[] = [];
   async create(data: InstanceOf<M>): Promise<InstanceOf<M> | null> {
     if (this.instances.find((instance) => instance.id === data.id)) {
       return null;
