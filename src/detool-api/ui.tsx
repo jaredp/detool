@@ -41,5 +41,5 @@ export function edit_ui<M extends ModelBase>(
     field.edit((instance as any)[name], (newValue) =>
       update({ ...instance, [name]: newValue })
     )
-  );
+  ) as CrudUI<M>;
 }
