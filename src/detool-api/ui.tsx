@@ -29,7 +29,7 @@ export function view_ui<M extends ModelBase>(
   return mapValues(model, (field: Field<any>, name: string & keyof M) => (
     // TODO: remove JSX from key
     <div {...props}>{field.view(instance[name])}</div>
-  ));
+  )) as CrudUI<M>;
 }
 
 export function edit_ui<M extends ModelBase>(

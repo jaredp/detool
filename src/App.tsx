@@ -7,7 +7,7 @@ import { Button } from "flowbite-react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { Modal } from "./components/Modal";
 
-import "./models/Company";
+// import "./models/Company";
 
 const EditableCrud = <M extends ModelBase>(props: {
   model: M;
