@@ -1,6 +1,4 @@
-import { ModelStore } from "../server/stores/api";
 import { UuidField } from "./field";
-import { getApiForModel } from "./state";
 
 /*
 
@@ -12,14 +10,6 @@ Model defined in high level types that know there
 
 */
 
-export interface ModelBase {
-  id: typeof UuidField;
-}
-
-export interface ModelAPI<M extends ModelBase> {
-  __serverApi: ModelStore<M>;
-}
-
 export interface Field<T> {
   dummy_value: () => T;
   view: (val: T) => React.ReactNode;
@@ -27,9 +17,16 @@ export interface Field<T> {
   initial_value: () => T;
 }
 
+export interface ModelBase<Fields extends {[field_name: string]: Field<any>} = {}> {
+  name: string;
+  fields: Fields & {id: typeof UuidField};
+}
+
+export type UnknownModel = ModelBase<{[field_name: string]: Field<unknown>}>;
+
 export type FieldType<T> = T extends Field<infer X> ? X : never;
-export type InstanceOf<T> = { [Property in keyof T]: FieldType<T[Property]> };
-export type CrudUI<T> = { [Property in keyof T]: React.ReactNode };
+export type InstanceOf<T extends ModelBase> = { [Property in keyof T["fields"]]: FieldType<T["fields"][Property]> };
+export type CrudUI<T extends ModelBase> = { [Property in keyof T["fields"]]: React.ReactNode };
 
 const _models = new Map<string, ModelBase>();
 
@@ -39,24 +36,23 @@ const _models = new Map<string, ModelBase>();
  * @param rawModel
  * @returns
  */
-export const Model = <M extends {}>(
+export const Model = <FieldsSrc extends {[field_name: string]: Field<any>}>(
   modelName: string,
-  rawModel: M
-): M & ModelBase => {
+  fields_src: FieldsSrc
+): ModelBase<FieldsSrc> => {
   if (_models.has(modelName)) {
     throw new Error(`Two models named ${modelName}. Or, model ${modelName} was somehow loaded twice.`);
   }
 
-  const model = { ...rawModel, id: UuidField };
+  const fields = { ...fields_src, id: UuidField };
+  const model = {
+    name: modelName,
+    fields,
+  };
+
   _models.set(modelName, model);
 
-  return {
-    ...model,
-    ...getApiForModel(modelName, model),
-  };
+  return model;
 };
 
 export const listModelNames = (): string[] => [..._models.keys()];
-export const getModel = <M extends ModelBase>(
-  modelName: string
-): M | undefined => _models.get(modelName) as M | undefined;

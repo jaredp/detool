@@ -1,14 +1,11 @@
 import { z } from "zod";
 
 import { router, publicProcedure } from "../server/api/trpc";
-import { InstanceOf, ModelBase } from "./model";
-import { ModelStore } from "../server/stores/api";
-
-const getStoreForModel = <M extends ModelBase,>(model: M): ModelStore<M> =>
-  (model as any).__serverApi;
+import { ModelBase, InstanceOf } from "./model";
+import { getApiForModel } from "./state";
 
 export function crudAPI<M extends ModelBase>(model: M) {
-  const store = getStoreForModel(model);
+  const store = getApiForModel(model);
   return router({
     list: publicProcedure.query(() => {
       return store.list();

@@ -8,7 +8,7 @@ export const AdminTable = <M extends ModelBase>(props: {
   onSelected: (instance: InstanceOf<M>) => void;
 }): React.ReactElement => {
   const { model, instances } = props;
-  const columns = Object.keys(model) as (string & keyof M)[];
+  const columns = Object.keys(model.fields) as (string & keyof M["fields"])[];
 
   return (
     <FlowbiteTable hoverable>
@@ -27,7 +27,7 @@ export const AdminTable = <M extends ModelBase>(props: {
               onClick={() => props.onSelected(instance)}
               key={instance.id}
             >
-              {columns.map((c: string & keyof M) => (
+              {columns.map((c: keyof M["fields"]) => (
                 <FlowbiteTable.Cell
                   key={`${instance.id}/${String(c)}`}
                   className="max-w-md overflow-hidden overflow-ellipsis whitespace-nowrap"

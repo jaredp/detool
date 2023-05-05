@@ -1,7 +1,7 @@
 // singleton class that stores all models
 
-import { ModelBase, InstanceOf } from "../../detool-api/model";
-import { dummy_instance } from "../../detool-api/ui";
+import { ModelBase, InstanceOf, UnknownModel } from "../../detool-api/model";
+import { dummy_instance, mapFields, model_sql_types } from "../../detool-api/ui";
 import { ModelStore } from "./api";
 import { Kysely } from "kysely";
 import { createKysely } from "@vercel/postgres-kysely";
@@ -22,18 +22,14 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
   }
 
   async init() {
+    const schema_types = model_sql_types(this.model);
+
     // create schema
     let schemaBuilder = this.db.schema.createTable(tableName).ifNotExists();
-    for (const [key, value] of Object.entries(this.model)) {
-      const exampleValue = value.initial_value();
-
-      let dbType: "varchar" | "integer" | "boolean" | "timestamp" = "varchar";
-      if (exampleValue instanceof Date) {
-        dbType = "timestamp";
-      }
-
-      schemaBuilder = schemaBuilder.addColumn(key, dbType).ifNotExists();
+    for (const [key, value] of Object.entries(schema_types)) {
+      schemaBuilder = schemaBuilder.addColumn(key, value);
     }
+
     await schemaBuilder.execute();
     const currentRowCount = await this.db
       .selectFrom(tableName)

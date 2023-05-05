@@ -1,20 +1,19 @@
-// import { InMemoryModelStore } from "../server/stores/InMemoryModelStore";
 import { PostgresModelStore } from "../server/stores/PostgresModelStore";
-import { ModelBase, ModelAPI, InstanceOf } from "./model";
+import { ModelStore } from "../server/stores/api";
+import { ModelBase, InstanceOf } from "./model";
 
 export const getApiForModel = <M extends ModelBase>(
-  name: string,
   model: M
-): ModelAPI<M> => {
+): ModelStore<M> => {
   if (typeof window === "undefined") {
-    console.log("getApiForModel", name);
+    console.log("getApiForModel", model.name);
 
     const store = new PostgresModelStore(model, 10);
     const initPromise = store.init();
-    const modelApi = {
+    return {
       list: async () => {
         await initPromise;
-        console.log("list", name);
+        console.log("list", model.name);
         return store.list();
       },
       create: async (data: InstanceOf<M>) => {
@@ -34,10 +33,6 @@ export const getApiForModel = <M extends ModelBase>(
         await initPromise;
         return store.delete(id);
       },
-    };
-
-    return {
-      __serverApi: modelApi,
     };
   } else {
     return {} as any;
