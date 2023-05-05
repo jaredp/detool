@@ -1,7 +1,7 @@
 // singleton class that stores all models
 
-import { ModelBase, InstanceOf, UnknownModel } from "../../detool-api/model";
-import { dummy_instance, mapFields, model_sql_types } from "../../detool-api/ui";
+import { ModelBase, InstanceOf } from "../../detool-api/model";
+import { dummy_instance, model_sql_types } from "../../detool-api/ui";
 import { ModelStore } from "./api";
 import { Kysely } from "kysely";
 import { createKysely } from "@vercel/postgres-kysely";

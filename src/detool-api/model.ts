@@ -20,25 +20,26 @@ export interface Field<T> {
 export interface ModelBase<Fields extends {[field_name: string]: Field<any>} = {}> {
   name: string;
   fields: Fields & {id: typeof UuidField};
-}
 
-export type UnknownModel = ModelBase<{[field_name: string]: Field<unknown>}>;
+  // We're lying to Typescript about types for ModelBase, so we're going to continue to lie and put
+  // an `any` here. The actual type is
+  //   DefaultForm?: React.ComponentType<{instance: CrudUI<this>}>;
+  DefaultForm?: React.ComponentType<{instance: any}>;
+}
 
 export type FieldType<T> = T extends Field<infer X> ? X : never;
 export type InstanceOf<T extends ModelBase> = { [Property in keyof T["fields"]]: FieldType<T["fields"][Property]> };
 export type CrudUI<T extends ModelBase> = { [Property in keyof T["fields"]]: React.ReactNode };
 
 const _models = new Map<string, ModelBase>();
+export const listModelNames = (): string[] => [..._models.keys()];
 
-/**
- *
- * @param modelName
- * @param rawModel
- * @returns
- */
 export const Model = <FieldsSrc extends {[field_name: string]: Field<any>}>(
   modelName: string,
-  fields_src: FieldsSrc
+  fields_src: FieldsSrc,
+  options?: {
+    DefaultForm?: React.ComponentType<{instance: CrudUI<ModelBase<FieldsSrc>>}>;
+  }
 ): ModelBase<FieldsSrc> => {
   if (_models.has(modelName)) {
     throw new Error(`Two models named ${modelName}. Or, model ${modelName} was somehow loaded twice.`);
@@ -48,11 +49,10 @@ export const Model = <FieldsSrc extends {[field_name: string]: Field<any>}>(
   const model = {
     name: modelName,
     fields,
+    ...(options ?? {}),
   };
 
   _models.set(modelName, model);
 
   return model;
 };
-
-export const listModelNames = (): string[] => [..._models.keys()];

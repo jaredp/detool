@@ -18,17 +18,13 @@ export const Person = Model("Person", {
 
   twitter: Optional(UrlField),
   linkedin: Optional(UrlField),
-});
-
-export const PersonForm: React.FC<{
-  instance: CrudUI<typeof Person>;
-}> = ({ instance }) => {
-  return (
+}, {
+  DefaultForm: ({ instance }) => (
     <div className="flex flex-col gap-4">
       <Row c={[instance.firstName, instance.lastName]} />
       <Row c={[instance.email, instance.birthday]} />
       <Row c={[instance.bio]} />
       <Row c={[instance.twitter, instance.linkedin]} />
     </div>
-  );
-};
+  )
+});

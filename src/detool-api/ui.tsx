@@ -55,6 +55,27 @@ export function edit_ui<M extends ModelBase>(
   );
 }
 
+export const DefaultForm = <M extends ModelBase,>(props: { model: M, instance: CrudUI<M> }): React.ReactElement => {
+  const DefaultFormComponent: React.ComponentType<{instance: CrudUI<M>}> | undefined = props.model.DefaultForm;
+  if (!DefaultFormComponent) {
+    // TODO: by default, show all the form fields in order
+    return <h4>Sorry, don{"'"}t know how to display {props.model.name}</h4>;
+  }
+  return <DefaultFormComponent instance={props.instance} />;
+}
+
+export const DefaultDetailView = <M extends ModelBase,>(props: { model: M, instance: InstanceOf<M> }): React.ReactElement => {
+  return <DefaultForm model={props.model} instance={view_ui(props.model, props.instance)} />;
+}
+
+export const DefaultEditView = <M extends ModelBase,>(props: {
+  model: M,
+  instance: InstanceOf<M>,
+  update: (newInstance: InstanceOf<M>) => void
+}): React.ReactElement => {
+  return <DefaultForm model={props.model} instance={edit_ui(props.model, props.instance, props.update)} />;
+}
+
 
 export type DbType = "varchar" | "integer" | "boolean" | "timestamp";
 export type SqlTypesOf<M extends ModelBase> = { [P in keyof M["fields"]]: DbType };
@@ -74,3 +95,5 @@ export function model_sql_types<M extends ModelBase>(model: M): SqlTypesOf<M> {
     }
   }) as SqlTypesOf<M>;
 }
+
+

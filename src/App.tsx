@@ -1,13 +1,11 @@
 import * as React from "react";
-import { Person, PersonForm } from "./models/Person";
+import { Person } from "./models/Person";
 import { AppLayout } from "./components/AppLayout";
 import { AdminTable } from "./components/AdminTable";
-import { blank_instance, edit_ui, view_ui } from "./detool-api/ui";
+import { DefaultForm, blank_instance, edit_ui, view_ui } from "./detool-api/ui";
 import { Button } from "flowbite-react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { Modal } from "./components/Modal";
-
-// import "./models/Company";
 
 const EditableCrud = <M extends ModelBase>(props: {
   model: M;
@@ -143,7 +141,7 @@ export default function App() {
         selectedUuid === new_instance_symbol ? (
           <NewInstancePage
             model={Person}
-            detail_view={(p) => <PersonForm instance={p} />}
+            detail_view={(p) => <DefaultForm model={Person} instance={p} />}
             cancel={() => setSelectedUuid(null)}
             save={async (new_person) => {
               await createHook.mutateAsync({
@@ -156,7 +154,7 @@ export default function App() {
         ) : (
           <EditableCrud
             model={Person}
-            detail_view={(p) => <PersonForm instance={p} />}
+            detail_view={(p) => <DefaultForm model={Person} instance={p} />}
             instance={selected!}
             update={async (updated_person) => {
               await updateHook.mutateAsync({
