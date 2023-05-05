@@ -146,7 +146,7 @@ export default function App() {
             detail_view={(p) => <PersonForm instance={p} />}
             cancel={() => setSelectedUuid(null)}
             save={async (new_person) => {
-              await createHook.mutate({
+              await createHook.mutateAsync({
                 data: new_person,
               });
               setSelectedUuid(null);
@@ -159,7 +159,7 @@ export default function App() {
             detail_view={(p) => <PersonForm instance={p} />}
             instance={selected!}
             update={async (updated_person) => {
-              await updateHook.mutate({
+              await updateHook.mutateAsync({
                 id: updated_person.id,
                 data: updated_person,
               });
@@ -167,7 +167,7 @@ export default function App() {
               result.refetch();
             }}
             delete={async () => {
-              await deleteHook.mutate({
+              await deleteHook.mutateAsync({
                 id: selected!.id,
               });
               result.refetch();
