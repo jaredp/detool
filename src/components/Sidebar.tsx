@@ -2,15 +2,21 @@ import { Sidebar as FlowbiteSidebar } from "flowbite-react";
 import { Badge } from "flowbite-react";
 import { TableCellsIcon } from "@heroicons/react/24/solid";
 
-export const Sidebar: React.FC<{ models: string[] }> = (props) => {
+export function Sidebar<T>(props: {
+  models: T[]
+  label: (model: T) => string,
+  onClick: (model: T) => void
+}): React.ReactElement {
   return (
     <div className="w-fit">
       <FlowbiteSidebar aria-label="FlowbiteSidebar with call to action button example">
         <FlowbiteSidebar.Items>
           <FlowbiteSidebar.ItemGroup>
             {props.models.map((model) => (
-              <FlowbiteSidebar.Item href="#" icon={TableCellsIcon} key={model}>
-                {model}
+              <FlowbiteSidebar.Item href="#" icon={TableCellsIcon} key={props.label(model)} onClick={() => {
+                props.onClick(model);
+              }}>
+                {props.label(model)}
               </FlowbiteSidebar.Item>
             ))}
           </FlowbiteSidebar.ItemGroup>
