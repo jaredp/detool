@@ -43,11 +43,13 @@ export const Model = <M extends {}>(
   modelName: string,
   rawModel: M
 ): M & ModelBase => {
-  const model = { ...rawModel, id: UuidField };
-  if (!_models.has(modelName)) {
-    // make idempotent
-    _models.set(modelName, model);
+  if (_models.has(modelName)) {
+    throw new Error(`Two models named ${modelName}. Or, model ${modelName} was somehow loaded twice.`);
   }
+
+  const model = { ...rawModel, id: UuidField };
+  _models.set(modelName, model);
+
   return {
     ...model,
     ...getApiForModel(modelName, model),
