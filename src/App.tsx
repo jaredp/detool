@@ -133,48 +133,46 @@ export default function App() {
   const people = result.data;
   const selected = people.find((p) => p.id === selectedUuid);
 
-  const modal = !selectedUuid ? null : (
-    <Modal
-      show={true}
-      onClose={() => setSelectedUuid(null)}
-      children={
-        selectedUuid === new_instance_symbol ? (
-          <NewInstancePage
-            model={Person}
-            detail_view={(p) => <DefaultForm model={Person} instance={p} />}
-            cancel={() => setSelectedUuid(null)}
-            save={async (new_person) => {
-              await createHook.mutateAsync({
-                data: new_person,
-              });
-              setSelectedUuid(null);
-              result.refetch();
-            }}
-          />
-        ) : (
-          <EditableCrud
-            model={Person}
-            detail_view={(p) => <DefaultForm model={Person} instance={p} />}
-            instance={selected!}
-            update={async (updated_person) => {
-              await updateHook.mutateAsync({
-                id: updated_person.id,
-                data: updated_person,
-              });
-              setSelectedUuid(null);
-              result.refetch();
-            }}
-            delete={async () => {
-              await deleteHook.mutateAsync({
-                id: selected!.id,
-              });
-              result.refetch();
-              setSelectedUuid(null);
-            }}
-          />
-        )
-      }
-    />
+  const new_modal = !(selectedUuid === new_instance_symbol) ? null : (
+    <Modal show={true} onClose={() => setSelectedUuid(null)}>
+      <NewInstancePage
+        model={Person}
+        detail_view={(p) => <DefaultForm model={Person} instance={p} />}
+        cancel={() => setSelectedUuid(null)}
+        save={async (new_person) => {
+          await createHook.mutateAsync({
+            data: new_person,
+          });
+          setSelectedUuid(null);
+          result.refetch();
+        }}
+      />
+    </Modal>
+  );
+
+  const detail_modal = !selected ? null : (
+    <Modal show={true} onClose={() => setSelectedUuid(null)}>
+      <EditableCrud
+        model={Person}
+        detail_view={(p) => <DefaultForm model={Person} instance={p} />}
+        instance={selected}
+        update={async (updated_person) => {
+          await updateHook.mutateAsync({
+            id: updated_person.id,
+            data: updated_person,
+          });
+          setSelectedUuid(null);
+          result.refetch();
+        }}
+        delete={async () => {
+          await deleteHook.mutateAsync({
+            id: selected.id,
+          });
+          result.refetch();
+          setSelectedUuid(null);
+        }}
+      />
+    </Modal>
   );
 
   const body = (
@@ -198,7 +196,9 @@ export default function App() {
         instances={people}
         onSelected={(person) => setSelectedUuid(person.id)}
       />
-      {modal}
+
+      {new_modal}
+      {detail_modal}
     </div>
   );
 
