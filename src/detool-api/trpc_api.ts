@@ -3,6 +3,8 @@ import { z } from "zod";
 import { router, publicProcedure } from "../server/api/trpc";
 import { ModelBase, InstanceOf } from "./model";
 import { getApiForModel } from "./state";
+import type { CreateTRPCNext, createTRPCNext } from "@trpc/next";
+import { NextPageContext } from "next/types";
 
 export function crudAPI<M extends ModelBase>(model: M) {
   const store = getApiForModel(model);
@@ -60,3 +62,5 @@ export function crudAPI<M extends ModelBase>(model: M) {
       }),
   });
 }
+
+export type CrudApiHooks<M extends ModelBase> = ReturnType<typeof createTRPCNext<ReturnType<typeof crudAPI<M>>>>;

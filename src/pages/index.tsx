@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
-import CreateReactAppEntryPoint from "../App";
+import { TableAndModalPage } from "../detool-api/TableAndModalPage";
 import React from "react";
 import { Loading } from "../components/Loading";
+import { AppLayout } from "../components/AppLayout";
+import { Person } from "../models/Person";
+import { trpc } from "../utils/trpc";
 
 function App() {
   const [isMounted, setIsMounted] = useState(false);
@@ -14,7 +17,12 @@ function App() {
     return <Loading />;
   }
 
-  return <CreateReactAppEntryPoint />;
+  // FIXME `as any` types issue with trpc internals
+  return (
+    <AppLayout>
+      <TableAndModalPage model={Person} crud_api={trpc.model_instance as any} />
+    </AppLayout>
+  );
 }
 
 export default App;
