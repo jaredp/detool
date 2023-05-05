@@ -1,6 +1,5 @@
 import React from "react";
 import { Person } from "./models/Person";
-import { trpc } from "./utils/trpc";
 import { TableAndModalPage } from "./detool-api/TableAndModalPage";
 
 import { Footer } from "./components/Footer";
@@ -10,9 +9,8 @@ import { Company } from "./models/Company";
 
 
 const Pages: [string, React.ReactElement][] = [
-  // FIXME: `as any` types issue with trpc internals
-  ["Person", <TableAndModalPage model={Person} crud_api={trpc.model_instance as any} />],
-  ["Company", <TableAndModalPage model={Company} crud_api={trpc.company as any} />],
+  ["Person", <TableAndModalPage model={Person} />],
+  ["Company", <TableAndModalPage model={Company} />],
 ]
 
 export default function App() {

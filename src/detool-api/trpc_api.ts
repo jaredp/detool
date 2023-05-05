@@ -63,3 +63,9 @@ export function crudAPI<M extends ModelBase>(model: M) {
 }
 
 export type CrudApiHooks<M extends ModelBase> = ReturnType<typeof createTRPCNext<ReturnType<typeof crudAPI<M>>>>;
+
+export function allDetoolTrpcCrudRoutes(models: ModelBase[]) {
+  return router({
+    ...Object.fromEntries(models.map((model) => [model.routename, crudAPI(model)])),
+  });
+}

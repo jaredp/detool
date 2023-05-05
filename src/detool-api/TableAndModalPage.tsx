@@ -6,22 +6,21 @@ import { PlusIcon } from "@heroicons/react/24/solid";
 import { Modal } from "../components/Modal";
 import { Loading } from "../components/Loading";
 import { NewInstancePage, EditableCrud } from "./GenericUI";
-import { ModelBase } from "./model";
-import { CrudApiHooks } from "./trpc_api";
+import { EnrichedModel } from "./model";
 
 const new_instance_symbol = Symbol("new instance");
 
-export function TableAndModalPage<M extends ModelBase>(props: {
+export function TableAndModalPage<M extends EnrichedModel>(props: {
   model: M,
-  crud_api: CrudApiHooks<M>
 }) {
   const [selectedUuid, setSelectedUuid] = React.useState<
     string | typeof new_instance_symbol | null
   >(null);
-  const result = props.crud_api.list.useQuery();
-  const createHook = props.crud_api.create.useMutation();
-  const updateHook = props.crud_api.update.useMutation();
-  const deleteHook = props.crud_api.delete.useMutation();
+
+  const result = props.model.hooks.list.useQuery();
+  const createHook = props.model.hooks.create.useMutation();
+  const updateHook = props.model.hooks.update.useMutation();
+  const deleteHook = props.model.hooks.delete.useMutation();
 
   if (!result.data) {
     return <Loading />;

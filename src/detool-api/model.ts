@@ -1,4 +1,6 @@
+import { trpc } from "../utils/trpc";
 import { UuidField } from "./field";
+import { CrudApiHooks } from "./trpc_api";
 
 /*
 
@@ -18,9 +20,11 @@ export interface Field<T> {
 }
 
 export interface ModelBase<Fields extends {[field_name: string]: Field<any>} = {}> {
+  fields: Fields & {id: typeof UuidField};
+
   name: string;
   tablename: string;
-  fields: Fields & {id: typeof UuidField};
+  routename: string;
 
   // We're lying to Typescript about types for ModelBase, so we're going to continue to lie and put
   // an `any` here. The actual type is
@@ -35,22 +39,36 @@ export type CrudUI<T extends ModelBase> = { [Property in keyof T["fields"]]: Rea
 const _models = new Map<string, ModelBase>();
 export const listModelNames = (): string[] => [..._models.keys()];
 
+export interface EnrichedModel<Fields extends {[field_name: string]: Field<any>} = {}> extends ModelBase<Fields> {
+  hooks: CrudApiHooks<this>;
+}
+
 export const Model = <FieldsSrc extends {[field_name: string]: Field<any>}>(
   modelName: string,
   fields_src: FieldsSrc,
   options?: {
     DefaultForm?: React.ComponentType<{instance: CrudUI<ModelBase<FieldsSrc>>}>;
   }
-): ModelBase<FieldsSrc> => {
+): EnrichedModel<FieldsSrc> => {
   if (_models.has(modelName)) {
     throw new Error(`Two models named ${modelName}. Or, model ${modelName} was somehow loaded twice.`);
   }
 
   const fields = { ...fields_src, id: UuidField };
+  const unix_safe_name = modelName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()
+  const routename = unix_safe_name
+
   const model = {
-    name: modelName,
-    tablename: modelName.toLowerCase(),
     fields,
+
+    name: modelName,
+    tablename: unix_safe_name,
+    routename: routename,
+
+    // client-side only. Pretty much a hack. Not totally clear long term what the client
+    // and/or server interfaces look like
+    hooks: typeof window === "undefined" ? null as any : trpc.detool_crud[routename],
+
     ...(options ?? {}),
   };
 
