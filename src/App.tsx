@@ -6,11 +6,13 @@ import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { Sidebar } from "./components/Sidebar";
 import { Company } from "./models/Company";
+import { Post } from "./models/Post";
 
 
 const Pages: [string, React.ReactElement][] = [
   ["Person", <TableAndModalPage model={Person} />],
   ["Company", <TableAndModalPage model={Company} />],
+  ["Post", <TableAndModalPage model={Post} />],
 ]
 
 export default function App() {
