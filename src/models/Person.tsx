@@ -7,7 +7,7 @@ import {
   Optional,
   UrlField,
 } from "../detool-api/field";
-import { Model, CrudUI } from "../detool-api/model";
+import { Model } from "../detool-api/model";
 
 export const Person = Model("Person", {
   firstName: ShortText,

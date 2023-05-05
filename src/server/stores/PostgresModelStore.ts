@@ -3,37 +3,29 @@
 import { ModelBase, InstanceOf } from "../../detool-api/model";
 import { dummy_instance, model_sql_types } from "../../detool-api/ui";
 import { ModelStore } from "./api";
-import { Kysely } from "kysely";
 import { createKysely } from "@vercel/postgres-kysely";
 
-const tableName = "person";
-/** Model store used for testing purposes. Does not persist data. */
+const db = createKysely<any>();
+
 export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
-  private db: Kysely<{
-    person: InstanceOf<M>;
-  }>;
-
-  constructor(private model: M, private seedCount: number) {
-    this.db = createKysely<{
-      person: InstanceOf<M>;
-    }>();
-
-    console.log("PostgresModelStore created");
-  }
+  constructor(private model: M, private seedCount: number) {}
 
   async init() {
     const schema_types = model_sql_types(this.model);
 
     // create schema
-    let schemaBuilder = this.db.schema.createTable(tableName).ifNotExists();
+    let schemaBuilder = db.schema.createTable(this.model.tablename).ifNotExists();
     for (const [key, value] of Object.entries(schema_types)) {
       schemaBuilder = schemaBuilder.addColumn(key, value);
     }
-
     await schemaBuilder.execute();
-    const currentRowCount = await this.db
-      .selectFrom(tableName)
-      .select([this.db.fn.count("id").as("count")])
+
+    // FIXME: should add seed data only if table doesn't exist
+    // as is, if a table is ever empty, we'll auto-add seed data
+
+    const currentRowCount = await db
+      .selectFrom(this.model.tablename)
+      .select([db.fn.count("id").as("count")])
       .executeTakeFirstOrThrow();
     const hasData = Number(currentRowCount.count) > 0;
     if (!hasData) {
@@ -49,24 +41,24 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
   }
 
   async create(data: InstanceOf<M>): Promise<InstanceOf<M> | null> {
-    const result = await this.db
-      .insertInto(tableName)
-      .values(data as any)
+    const result = await db
+      .insertInto(this.model.tablename)
+      .values(data)
       .execute();
 
     return result.length > 0 ? data : null;
   }
   async list(): Promise<InstanceOf<M>[]> {
-    const result = (await this.db
-      .selectFrom(tableName)
+    const result = (await db
+      .selectFrom(this.model.tablename)
       .selectAll()
       .execute()) as InstanceOf<M>[];
     return result;
   }
   async getById(id: string): Promise<InstanceOf<M> | null> {
-    const result = await this.db
-      .selectFrom(tableName)
-      .where("id", "=", id as any)
+    const result = await db
+      .selectFrom(this.model.tablename)
+      .where("id", "=", id)
       .executeTakeFirst();
     return (result as any) ?? null;
   }
@@ -74,18 +66,18 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
     id: string,
     newInstance: InstanceOf<M>
   ): Promise<InstanceOf<M> | null> {
-    const result = await this.db
-      .updateTable(tableName)
-      .where("id", "=", id as any)
-      .set(newInstance as any)
+    const result = await db
+      .updateTable(this.model.tablename)
+      .where("id", "=", id)
+      .set(newInstance)
       .executeTakeFirst();
     return result.numUpdatedRows > 0 ? newInstance : null;
   }
 
   async delete(id: string): Promise<boolean> {
-    const result = await this.db
-      .deleteFrom(tableName)
-      .where("id", "=", id as any)
+    const result = await db
+      .deleteFrom(this.model.tablename)
+      .where("id", "=", id)
       .execute();
     return result.length > 0;
   }

@@ -19,6 +19,7 @@ export interface Field<T> {
 
 export interface ModelBase<Fields extends {[field_name: string]: Field<any>} = {}> {
   name: string;
+  tablename: string;
   fields: Fields & {id: typeof UuidField};
 
   // We're lying to Typescript about types for ModelBase, so we're going to continue to lie and put
@@ -48,6 +49,7 @@ export const Model = <FieldsSrc extends {[field_name: string]: Field<any>}>(
   const fields = { ...fields_src, id: UuidField };
   const model = {
     name: modelName,
+    tablename: modelName.toLowerCase(),
     fields,
     ...(options ?? {}),
   };
