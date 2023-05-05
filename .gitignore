@@ -22,3 +22,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .next
+
+# not sure what this is
+tsconfig.tsbuildinfo

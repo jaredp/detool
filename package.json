@@ -27,7 +27,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "fix": "next lint --fix"
+    "fix": "next lint --fix",
+    "ts-lint": "tsc --noEmit --incremental --watch"
   },
   "devDependencies": {
     "@types/node": "18.15.11",
