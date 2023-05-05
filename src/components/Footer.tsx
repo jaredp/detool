@@ -9,8 +9,8 @@ export const Footer: React.FC<{}> = (props) => {
         year={new Date().getFullYear()}
       />
       <FlowbiteFooter.LinkGroup>
-        <FlowbiteFooter.Link href="#" children={"About"} />
-        <FlowbiteFooter.Link href="#" children={"Privacy Policy"} />
+        {/* <FlowbiteFooter.Link href="#" children={"About"} /> */}
+        <FlowbiteFooter.Link href="#" children={"Privacy"} />
         <FlowbiteFooter.Link href="#" children={"Terms"} />
         <FlowbiteFooter.Link href="#" children={"Contact"} />
       </FlowbiteFooter.LinkGroup>
