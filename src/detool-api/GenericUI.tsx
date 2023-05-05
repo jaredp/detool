@@ -93,7 +93,7 @@ export const NewInstancePage = <M extends ModelBase>(props: {
   return (
     <div className="flex flex-col gap-4 ">
       <h3 className="pb-2 text-xl font-medium text-gray-900">
-        Create new instance
+        Add new {model.name}
       </h3>
       {detail_view(edit_ui(model, dirtyInstance, setDirtyInstance))}
       <Button.Group className="flex justify-end">

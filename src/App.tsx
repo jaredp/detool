@@ -8,24 +8,26 @@ import { Navbar } from "./components/Navbar";
 import { Sidebar } from "./components/Sidebar";
 import { Company } from "./models/Company";
 
+
+const Pages: [string, React.ReactElement][] = [
+  // FIXME: `as any` types issue with trpc internals
+  ["Person", <TableAndModalPage model={Person} crud_api={trpc.model_instance as any} />],
+  ["Company", <TableAndModalPage model={Company} crud_api={trpc.company as any} />],
+]
+
 export default function App() {
-  const models = [
-    {model: Person, api: trpc.model_instance},
-    {model: Company, api: trpc.company}
-  ]
-  const [selectedModel, setSelectedModel] = React.useState<typeof models[number]>(models[0]);
+  const [selectedPage, setSelectedPage] = React.useState<typeof Pages[number]>(Pages[0]);
 
   return (
     <div className="flex flex-col md:h-screen">
       <Navbar />
 
       <div className="md:flex-fit md:flex md:flex-grow md:flex-row md:overflow-y-auto">
-        <Sidebar models={models} label={m => m.model.name} onClick={(model) => {
-          setSelectedModel(model);
+        <Sidebar tabs={Pages} label={p => p[0]} onClick={(page) => {
+          setSelectedPage(page);
         }} />
         <div className="flex-grow overflow-y-auto p-4">
-          {/* FIXME: `as any` types issue with trpc internals */}
-          <TableAndModalPage model={selectedModel.model} crud_api={selectedModel.api as any} />
+          { selectedPage[1] }
         </div>
       </div>
 

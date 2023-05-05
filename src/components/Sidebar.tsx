@@ -3,7 +3,7 @@ import { Badge } from "flowbite-react";
 import { TableCellsIcon } from "@heroicons/react/24/solid";
 
 export function Sidebar<T>(props: {
-  models: T[]
+  tabs: T[]
   label: (model: T) => string,
   onClick: (model: T) => void
 }): React.ReactElement {
@@ -12,7 +12,7 @@ export function Sidebar<T>(props: {
       <FlowbiteSidebar aria-label="FlowbiteSidebar with call to action button example">
         <FlowbiteSidebar.Items>
           <FlowbiteSidebar.ItemGroup>
-            {props.models.map((model) => (
+            {props.tabs.map((model) => (
               <FlowbiteSidebar.Item href="#" icon={TableCellsIcon} key={props.label(model)} onClick={() => {
                 props.onClick(model);
               }}>
