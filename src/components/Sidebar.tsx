@@ -15,7 +15,7 @@ export const Sidebar: React.FC<{ models: string[] }> = (props) => {
             ))}
           </FlowbiteSidebar.ItemGroup>
         </FlowbiteSidebar.Items>
-        <FlowbiteSidebar.CTA>
+        {/* <FlowbiteSidebar.CTA>
           <div className="mb-3 flex items-center">
             <Badge color="warning">Beta</Badge>
             <button
@@ -45,7 +45,7 @@ export const Sidebar: React.FC<{ models: string[] }> = (props) => {
           <span className="text-sm text-blue-900 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
             Turn new navigation off
           </span>
-        </FlowbiteSidebar.CTA>
+        </FlowbiteSidebar.CTA> */}
       </FlowbiteSidebar>
     </div>
   );

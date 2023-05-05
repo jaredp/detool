@@ -11,9 +11,9 @@ export const Navbar: React.FC<{}> = (props) => {
       <FlowbiteNavbar.Toggle />
       <FlowbiteNavbar.Collapse>
         <FlowbiteNavbar.Link href="#" active={true} children={"Home"} />
-        <FlowbiteNavbar.Link href="#" children={"Services"} />
-        <FlowbiteNavbar.Link href="#" children={"Pricing"} />
-        <FlowbiteNavbar.Link href="#" children={"Contact"} />
+        {/* <FlowbiteNavbar.Link href="#" children={"Services"} /> */}
+        {/* <FlowbiteNavbar.Link href="#" children={"Pricing"} /> */}
+        {/* <FlowbiteNavbar.Link href="#" children={"Contact"} /> */}
       </FlowbiteNavbar.Collapse>
     </FlowbiteNavbar>
   );
