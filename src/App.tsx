@@ -31,7 +31,7 @@ export default function App() {
         </div>
       </div>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

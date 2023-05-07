@@ -11,7 +11,7 @@ export const AdminTable = <M extends ModelBase>(props: {
   const columns = Object.keys(model.fields) as (string & keyof M["fields"])[];
 
   return (
-    <FlowbiteTable hoverable>
+    <FlowbiteTable hoverable className="text-gray-900">
       <FlowbiteTable.Head>
         {columns.map((c) => (
           <FlowbiteTable.HeadCell key={c} children={c} />
