@@ -4,14 +4,16 @@ import { TextInput, Textarea } from "flowbite-react";
 import { Field } from "./model";
 import nodeCrypto from "crypto";
 
+const getFaker = async () => {
+  const { faker } = await import("@faker-js/faker");
+  return faker;
+};
+
 const randomUUID = (): string => {
   if (typeof nodeCrypto?.randomUUID === "function") {
     return nodeCrypto.randomUUID();
   }
-  if (typeof globalThis?.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-  return faker.datatype.uuid();
+  return (globalThis?.crypto?.randomUUID() as string) || "some-uuid";
 };
 
 export const UuidField: Field<string> = {
@@ -36,7 +38,7 @@ export const DateField: Field<Date> = {
 };
 
 export const Checkbox: Field<boolean> = {
-  dummy_value: () => faker.datatype.boolean(),
+  dummy_value: async () => (await getFaker()).datatype.boolean(),
   initial_value: () => false,
   view: (val, fieldName) => (
     <div className="flex w-full flex-grow items-baseline">
@@ -60,7 +62,7 @@ export const Checkbox: Field<boolean> = {
 };
 
 export const ShortText: Field<string> = {
-  dummy_value: () => faker.lorem.words(),
+  dummy_value: async () => (await getFaker()).lorem.words(),
   initial_value: () => "",
   view: (val) => val,
   edit: (val, update) => (
@@ -74,7 +76,7 @@ export const ShortText: Field<string> = {
 };
 
 export const UrlField: Field<string> = {
-  dummy_value: () => faker.internet.url(),
+  dummy_value: async () => (await getFaker()).internet.url(),
   initial_value: () => "",
   view: (val) => (
     <a href={val} className="font-medium text-blue-600 ">
@@ -93,7 +95,7 @@ export const UrlField: Field<string> = {
 };
 
 export const EmailAddress: Field<string> = {
-  dummy_value: () => faker.internet.email(),
+  dummy_value: async () => (await getFaker()).internet.email(),
   initial_value: () => "",
   view: (val) => (
     <a href={`mailto:${val}`} className="font-medium text-blue-600 ">
@@ -113,7 +115,7 @@ export const EmailAddress: Field<string> = {
 };
 
 export const PhoneNumber: Field<string> = {
-  dummy_value: () => faker.phone.number(),
+  dummy_value: async () => (await getFaker()).phone.number(),
   initial_value: () => "",
   view: (val) => (
     <a href={`tel:${val}`} className="font-medium text-blue-600 ">
@@ -133,7 +135,7 @@ export const PhoneNumber: Field<string> = {
 };
 
 export const LongText: Field<string> = {
-  dummy_value: () => faker.lorem.paragraph(),
+  dummy_value: async () => (await getFaker()).lorem.paragraph(),
   initial_value: () => "",
   view: (val) => val,
   edit: (val, update) => (

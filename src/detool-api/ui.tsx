@@ -14,6 +14,22 @@ export function mapFields<M extends ModelBase>(
   ) as any;
 }
 
+export async function mapFieldsAsync<M extends ModelBase>(
+  obj: M,
+  iteratee: <K extends keyof M["fields"]>(
+    value: Field<unknown>,
+    key: K
+  ) => Promise<any>
+): Promise<{ [P in keyof M]: any }> {
+  const entriesPromises = Object.entries(obj.fields).map(async ([k, v]) => [
+    k,
+    await iteratee(v as Field<unknown>, k as any),
+  ]);
+  const entries = await Promise.all(entriesPromises);
+
+  return Object.fromEntries(entries) as Promise<any>;
+}
+
 function zipFields<M extends ModelBase>(
   model: M,
   instance: InstanceOf<M>,
@@ -24,8 +40,12 @@ function zipFields<M extends ModelBase>(
   ) as any;
 }
 
-export function dummy_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return mapFields(model, (field) => field.dummy_value()) as InstanceOf<M>;
+export async function dummy_instance<M extends ModelBase>(
+  model: M
+): Promise<InstanceOf<M>> {
+  return mapFieldsAsync(model, async (field) =>
+    field.dummy_value()
+  ) as InstanceOf<M>;
 }
 
 export function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {

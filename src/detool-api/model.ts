@@ -13,7 +13,7 @@ Model defined in high level types that know there
 */
 
 export interface Field<T> {
-  dummy_value: () => T;
+  dummy_value: () => Promise<T> | T;
   view: (val: T, fieldName: string) => React.ReactNode;
   edit: (
     val: T,

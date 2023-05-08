@@ -33,7 +33,7 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
         throw new Error("seedCount must be >= 0");
       }
       for (let i = 0; i < this.seedCount; i++) {
-        this.create(dummy_instance(this.model));
+        this.create(await dummy_instance(this.model));
       }
 
       console.log("PostgresModelStore seeded");
