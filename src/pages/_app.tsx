@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <>
+      {/* @ts-ignore TODO figure out why types are not well setup here */}
       <style jsx global>{`
         html {
           font-family: ${inter.style.fontFamily};
