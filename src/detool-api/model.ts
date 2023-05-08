@@ -14,8 +14,12 @@ Model defined in high level types that know there
 
 export interface Field<T> {
   dummy_value: () => T;
-  view: (val: T) => React.ReactNode;
-  edit: (val: T, update: (newValue: T) => void) => React.ReactNode;
+  view: (val: T, fieldName: string) => React.ReactNode;
+  edit: (
+    val: T,
+    update: (newValue: T) => void,
+    fieldName: string
+  ) => React.ReactNode;
   initial_value: () => T;
 }
 

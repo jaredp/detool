@@ -35,6 +35,30 @@ export const DateField: Field<Date> = {
   ),
 };
 
+export const Checkbox: Field<boolean> = {
+  dummy_value: () => faker.datatype.boolean(),
+  initial_value: () => false,
+  view: (val, fieldName) => (
+    <div className="flex w-full flex-grow items-baseline">
+      <input type="checkbox" className="mx-2" checked={val} readOnly disabled />
+      <span>{fieldName}</span>
+    </div>
+  ),
+  edit: (val, update, fieldName) => {
+    return (
+      <div className="flex w-full flex-grow items-baseline self-center">
+        <input
+          type="checkbox"
+          className="mx-2"
+          checked={val}
+          onChange={(e) => update(e.target.checked)}
+        />
+        <span>{fieldName}</span>
+      </div>
+    );
+  },
+};
+
 export const ShortText: Field<string> = {
   dummy_value: () => faker.lorem.words(),
   initial_value: () => "",

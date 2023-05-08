@@ -41,7 +41,7 @@ export function view_ui<M extends ModelBase>(
 ): CrudUI<M> {
   return zipFields(model, instance, (name, field, value) => (
     // TODO: remove JSX from key
-    <div {...props}>{field.view(value)}</div>
+    <div {...props}>{field.view(value, name as string)}</div>
   ));
 }
 
@@ -51,7 +51,11 @@ export function edit_ui<M extends ModelBase>(
   update: (newInstance: InstanceOf<M>) => void
 ): CrudUI<M> {
   return zipFields(model, instance, (name, field, value) =>
-    field.edit(value, (newValue) => update({ ...instance, [name]: newValue }))
+    field.edit(
+      value,
+      (newValue) => update({ ...instance, [name]: newValue }),
+      name as string
+    )
   );
 }
 
