@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { LinkIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
+import { LinkIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/solid";
 import { TextInput, Textarea } from "flowbite-react";
 import { Field } from "./model";
 import nodeCrypto from "crypto";
@@ -79,7 +79,28 @@ export const EmailAddress: Field<string> = {
   edit: (val, update) => (
     <TextInput
       type="email"
+      placeholder="you@example.com"
       icon={EnvelopeIcon as any}
+      value={val}
+      onChange={(e) => update(e.target.value)}
+      className="w-full flex-grow"
+    />
+  ),
+};
+
+export const PhoneNumber: Field<string> = {
+  dummy_value: () => faker.phone.number(),
+  initial_value: () => "",
+  view: (val) => (
+    <a href={`tel:${val}`} className="font-medium text-blue-600 ">
+      {val}
+    </a>
+  ),
+  edit: (val, update) => (
+    <TextInput
+      type="tel"
+      placeholder="(999) 999-9999"
+      icon={PhoneIcon as any}
       value={val}
       onChange={(e) => update(e.target.value)}
       className="w-full flex-grow"
