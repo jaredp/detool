@@ -39,7 +39,7 @@ export const EditableCrud = <M extends ModelBase>(props: {
     return (
       <FocusOnMount>
         <div className="flex flex-col gap-4">
-          <h3 className="text-xl font-medium text-gray-900">Edit</h3>
+          <h3 className="text-xl font-medium text-gray-900">Edit Instance</h3>
           {detail_view(crud_ctrls)}
           <div className="flex justify-end">{actions}</div>
         </div>
@@ -73,7 +73,7 @@ export const EditableCrud = <M extends ModelBase>(props: {
   );
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-xl font-medium text-gray-900">Edit</h3>
+      <h3 className="text-xl font-medium text-gray-900">Edit Instance</h3>
       {detail_view(crud_ctrls)}
       <div className="flex justify-end">{actions}</div>
     </div>

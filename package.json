@@ -12,6 +12,7 @@
     "@trpc/server": "10.25.0",
     "@vercel/postgres": "^0.2.1",
     "@vercel/postgres-kysely": "^0.2.1",
+    "clsx": "^1.2.1",
     "flowbite": "1.6.5",
     "flowbite-react": "0.4.4",
     "kysely": "^0.24.2",

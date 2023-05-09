@@ -1,6 +1,7 @@
 import React from "react";
 import { Person } from "./models/Person";
 import { TableAndModalPage } from "./detool-api/TableAndModalPage";
+import { ListDetailPage } from "./detool-api/ListDetailPage";
 
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
@@ -9,15 +10,13 @@ import { Company } from "./models/Company";
 import { Post } from "./models/Post";
 
 const Pages: [string, React.ReactElement][] = [
-  ["Person", <TableAndModalPage model={Person} />],
+  ["Person", <ListDetailPage model={Person} />],
   ["Company", <TableAndModalPage model={Company} />],
   ["Post", <TableAndModalPage model={Post} />],
 ];
 
 export default function App() {
-  const [selectedPageIndex, setSelectedPageIndex] = React.useState<
-    number
-  >(0);
+  const [selectedPageIndex, setSelectedPageIndex] = React.useState<number>(0);
 
   return (
     <div className="flex flex-col md:h-screen">
@@ -32,8 +31,8 @@ export default function App() {
             setSelectedPageIndex(pageIndex);
           }}
         />
-        <div className="flex-grow overflow-y-auto p-4">
-          {Pages[selectedPageIndex]}
+        <div className="relative flex-grow overflow-y-auto">
+          {Pages[selectedPageIndex][1]}
         </div>
       </div>
 
