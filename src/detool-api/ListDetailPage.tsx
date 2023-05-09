@@ -84,11 +84,6 @@ export function ListDetailPage<M extends EnrichedModel>(props: { model: M }) {
 
   const detail_modal = !selected ? null : (
     <>
-      <div className="flex justify-end">
-        <Button size="sm" color="light" onClick={() => setSelectedUuid(null)}>
-          Cancel
-        </Button>
-      </div>
       <EditableCrud
         model={props.model}
         detail_view={(p) => <DefaultForm model={props.model} instance={p} />}
@@ -114,11 +109,16 @@ export function ListDetailPage<M extends EnrichedModel>(props: { model: M }) {
 
   return (
     <div className="flex h-full flex-1">
-      <div className="max-w-xs overflow-y-auto border-r ">
-        <div className="m-2 flex justify-end">
-          <span className="flex-grow text-sm text-gray-500 ">
-            {instances.length} instances loaded
-          </span>
+      <div className="max-w-xs overflow-y-auto border-r">
+        <div className="p-2 flex justify-end items-center border-b">
+          <div className="flex-grow pl-2">
+            <div className="text-md font-semibold text-gray-800">
+              {props.model.name}
+            </div>
+            <div className="text-sm text-gray-500">
+              {instances.length} total in the system
+            </div>
+          </div>
           <Button
             color="success"
             size={"xs"}
@@ -139,10 +139,14 @@ export function ListDetailPage<M extends EnrichedModel>(props: { model: M }) {
           ))}
         </ul>
       </div>
-      <div className="align-center flex flex-1 flex-col overflow-y-auto p-4">
+      <div className="align-center flex flex-1 flex-col overflow-y-auto p-10">
         {new_modal || detail_modal || (
-          <div className="m-8 flex flex-1 flex-grow select-none text-center text-sm text-gray-500">
-            Click any rows below to edit them
+          <div className="flex items-center justify-center h-full">
+            <p className="select-none text-center">
+              <span className="text-gray-800 text-lg">Select a {props.model.name} from the list</span>
+              <br />
+              <span className="text-gray-500 text-md">on the left to view details</span>
+            </p>
           </div>
         )}
       </div>

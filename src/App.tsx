@@ -2,17 +2,16 @@ import React from "react";
 import { Person } from "./models/Person";
 import { TableAndModalPage } from "./detool-api/TableAndModalPage";
 import { ListDetailPage } from "./detool-api/ListDetailPage";
+import { Navbar as FlowbiteNavbar } from "flowbite-react";
 
-import { Footer } from "./components/Footer";
-import { Navbar } from "./components/Navbar";
 import { Sidebar } from "./components/Sidebar";
 import { Company } from "./models/Company";
 import { Post } from "./models/Post";
 
 const Pages: [string, React.ReactElement][] = [
   ["Person", <ListDetailPage model={Person} />],
-  ["Company", <TableAndModalPage model={Company} />],
-  ["Post", <TableAndModalPage model={Post} />],
+  ["Company", <div className="p-4"><TableAndModalPage model={Company} /></div>],
+  ["Post", <div className="p-4"><TableAndModalPage model={Post} /></div>],
 ];
 
 export default function App() {
@@ -20,23 +19,29 @@ export default function App() {
 
   return (
     <div className="flex flex-col md:h-screen">
-      <Navbar />
-
       <div className="md:flex-fit md:flex md:flex-grow md:flex-row md:overflow-y-auto">
-        <Sidebar
-          selectedPageIndex={selectedPageIndex}
-          tabs={Pages}
-          label={(p) => p[0]}
-          onClick={(pageIndex) => {
-            setSelectedPageIndex(pageIndex);
-          }}
-        />
+        <div className="w-fit border-r flex flex-col md:h-screen">
+          <FlowbiteNavbar.Brand href="#" className="p-6 pb-0">
+            <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+              detool
+            </span>
+          </FlowbiteNavbar.Brand>
+
+          <Sidebar
+            selectedPageIndex={selectedPageIndex}
+            tabs={Pages}
+            label={(p) => p[0]}
+            onClick={(pageIndex) => {
+              setSelectedPageIndex(pageIndex);
+            }}
+          />
+        </div>
+
         <div className="relative flex-grow overflow-y-auto">
           {Pages[selectedPageIndex][1]}
         </div>
       </div>
 
-      {/* <Footer /> */}
     </div>
   );
 }

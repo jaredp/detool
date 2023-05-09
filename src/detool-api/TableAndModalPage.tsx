@@ -73,10 +73,11 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <span className="flex-grow text-sm text-gray-500 ">
-          {instances.length} instances loaded. <br />
-          Click any rows below to edit them
+      <div className="flex justify-end items-center">
+        <span className="flex-grow text-sm text-gray-500">
+          {instances.length} rows loaded
+          <br />
+          Click on a row edit to edit it
         </span>
         <Button
           color="success"

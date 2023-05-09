@@ -17,65 +17,56 @@ export const EditableCrud = <M extends ModelBase>(props: {
     React.useState<InstanceOf<M> | null>(null);
 
   if (dirtyInstance) {
-    const crud_ctrls = edit_ui(model, dirtyInstance, setDirtyInstance);
-    const actions = (
-      <Button.Group>
-        <Button
-          color="gray"
-          children="cancel"
-          onClick={() => {
-            setDirtyInstance(null);
-          }}
-        />
-        <Button
-          children="save"
-          onClick={() => {
-            props.update(dirtyInstance);
-            setDirtyInstance(null);
-          }}
-        />
-      </Button.Group>
-    );
     return (
       <FocusOnMount>
         <div className="flex flex-col gap-4">
-          <h3 className="text-xl font-medium text-gray-900">Edit Instance</h3>
-          {detail_view(crud_ctrls)}
-          <div className="flex justify-end">{actions}</div>
+          {detail_view(edit_ui(model, dirtyInstance, setDirtyInstance))}
+          <div className="flex justify-end gap-2">
+            <Button
+              color="gray"
+              children="cancel"
+              onClick={() => {
+                setDirtyInstance(null);
+              }}
+            />
+            <Button
+              children="save"
+              onClick={() => {
+                props.update(dirtyInstance);
+                setDirtyInstance(null);
+              }}
+            />
+          </div>
         </div>
       </FocusOnMount>
     );
   }
-  const crud_ctrls = view_ui(model, props.instance, {
-    className: "w-full flex-grow",
-  });
-  const actions = (
-    <Button.Group>
-      <Button
-        color="red"
-        children="delete"
-        onClick={() => {
-          const result = confirm(
-            "Are you sure you want to delete this instance?"
-          );
-          if (result) {
-            props.delete();
-          }
-        }}
-      />
-      <Button
-        children="edit"
-        onClick={() => {
-          setDirtyInstance(props.instance);
-        }}
-      />
-    </Button.Group>
-  );
+
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-xl font-medium text-gray-900">Edit Instance</h3>
-      {detail_view(crud_ctrls)}
-      <div className="flex justify-end">{actions}</div>
+      {detail_view(view_ui(model, props.instance, {
+        className: "w-full flex-grow",
+      }))}
+      <div className="flex justify-between">
+        <Button
+          color="red"
+          children="Delete"
+          onClick={() => {
+            const result = confirm(
+              "Are you sure you want to delete this instance?"
+            );
+            if (result) {
+              props.delete();
+            }
+          }}
+        />
+        <Button
+          children="Edit"
+          onClick={() => {
+            setDirtyInstance(props.instance);
+          }}
+        />
+      </div>
     </div>
   );
 };

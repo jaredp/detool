@@ -1,7 +1,5 @@
-import { useEffect, useRef } from "react";
 import { Row } from "../components/Row";
 import { ModelBase, InstanceOf, Field, CrudUI } from "./model";
-import { useRefAndFocus } from "../utils/useFocusOnMount";
 
 /* there's apparently no way to correctly type in typescript */
 export function mapFields<M extends ModelBase>(
