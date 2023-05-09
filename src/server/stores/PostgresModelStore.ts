@@ -52,6 +52,7 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
     const result = (await db
       .selectFrom(this.model.tablename)
       .selectAll()
+      .orderBy("ctid")
       .execute()) as InstanceOf<M>[];
     return result;
   }

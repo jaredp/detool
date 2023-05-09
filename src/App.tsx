@@ -20,7 +20,7 @@ export default function App() {
   return (
     <div className="flex flex-col md:h-screen">
       <div className="md:flex-fit md:flex md:flex-grow md:flex-row md:overflow-y-auto">
-        <div className="w-fit border-r flex flex-col md:h-screen">
+        <div className="w-fit border-r flex flex-col md:h-screen select-none">
           <FlowbiteNavbar.Brand href="#" className="p-6 pb-0">
             <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
               detool
