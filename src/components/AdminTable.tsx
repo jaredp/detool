@@ -1,4 +1,5 @@
 import { InstanceOf, ModelBase } from "../detool-api/model";
+import { humanize_label } from "../detool-api/name_utils";
 import { view_ui } from "../detool-api/ui";
 import { Table as FlowbiteTable } from "flowbite-react";
 
@@ -14,7 +15,7 @@ export const AdminTable = <M extends ModelBase>(props: {
     <FlowbiteTable hoverable className="text-gray-900">
       <FlowbiteTable.Head>
         {columns.map((c) => (
-          <FlowbiteTable.HeadCell key={c} children={c} />
+          <FlowbiteTable.HeadCell key={c} children={humanize_label(c)} />
         ))}
       </FlowbiteTable.Head>
       <FlowbiteTable.Body className="divide-y">

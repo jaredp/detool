@@ -3,6 +3,7 @@ import { LinkIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/solid";
 import { TextInput, Textarea } from "flowbite-react";
 import { Field } from "./model";
 import nodeCrypto from "crypto";
+import { humanize_label } from "./name_utils";
 
 const getFaker = async () => {
   const { faker } = await import("@faker-js/faker");
@@ -43,7 +44,7 @@ export const Checkbox: Field<boolean> = {
   view: (val, fieldName) => (
     <div className="flex w-full flex-grow items-baseline">
       <input type="checkbox" className="mx-2" checked={val} readOnly disabled />
-      <span>{fieldName}</span>
+      <span>{humanize_label(fieldName)}</span>
     </div>
   ),
   edit: (val, update, fieldName) => {
@@ -55,7 +56,7 @@ export const Checkbox: Field<boolean> = {
           checked={val}
           onChange={(e) => update(e.target.checked)}
         />
-        <span>{fieldName}</span>
+        <span>{humanize_label(fieldName)}</span>
       </div>
     );
   },
@@ -65,9 +66,10 @@ export const ShortText: Field<string> = {
   dummy_value: async () => (await getFaker()).lorem.words(),
   initial_value: () => "",
   view: (val) => val,
-  edit: (val, update) => (
+  edit: (val, update, fieldName) => (
     <TextInput
       type="text"
+      placeholder={humanize_label(fieldName)}
       value={val}
       onChange={(e) => update(e.target.value)}
       className="w-full flex-grow"
@@ -85,8 +87,9 @@ export const UrlField: Field<string> = {
   ),
   edit: (val, update) => (
     <TextInput
-      type="url"
       icon={LinkIcon as any}
+      type="url"
+      placeholder="https://..."
       value={val}
       onChange={(e) => update(e.target.value)}
       className="w-full flex-grow"
@@ -138,10 +141,11 @@ export const LongText: Field<string> = {
   dummy_value: async () => (await getFaker()).lorem.paragraph(),
   initial_value: () => "",
   view: (val) => val,
-  edit: (val, update) => (
+  edit: (val, update, fieldName) => (
     <Textarea
       value={val}
       onChange={(e) => update(e.target.value)}
+      placeholder={humanize_label(fieldName)}
       className="w-full flex-grow"
     />
   ),
