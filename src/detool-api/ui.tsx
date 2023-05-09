@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { Row } from "../components/Row";
 import { ModelBase, InstanceOf, Field, CrudUI } from "./model";
+import { useRefAndFocus } from "../utils/useFocusOnMount";
 
 /* there's apparently no way to correctly type in typescript */
 export function mapFields<M extends ModelBase>(
@@ -87,7 +89,7 @@ const SimpleForm = (props: { instance: any }) => {
       {Object.keys(instance)
         .filter((k) => k !== "id")
         .map((k) => (
-          <Row c={[k, instance[k]]} />
+          <Row key={k} c={[k, instance[k]]} />
         ))}
     </div>
   );
@@ -101,6 +103,7 @@ export const DefaultForm = <M extends ModelBase>(props: {
     | React.ComponentType<{ instance: CrudUI<M> }>
     | undefined = props.model.DefaultForm;
   const FormComponent = DefaultFormComponent ?? SimpleForm;
+
   return <FormComponent instance={props.instance} />;
 };
 
@@ -122,10 +125,10 @@ export const DefaultEditView = <M extends ModelBase>(props: {
   update: (newInstance: InstanceOf<M>) => void;
 }): React.ReactElement => {
   return (
-    <DefaultForm
-      model={props.model}
-      instance={edit_ui(props.model, props.instance, props.update)}
-    />
+      <DefaultForm
+        model={props.model}
+        instance={edit_ui(props.model, props.instance, props.update)}
+      />
   );
 };
 
