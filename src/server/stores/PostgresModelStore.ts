@@ -2,10 +2,31 @@
 
 import { ModelBase, InstanceOf } from "../../detool-api/model";
 import { dummy_instance, model_sql_types } from "../../detool-api/ui";
-import { ModelStore } from "./api";
+import { ListOptions, ModelStore } from "./api";
 import { createKysely } from "@vercel/postgres-kysely";
 
 const db = createKysely<any>();
+
+function opToKyselyOp(
+  op: "eq" | "ne" | "gt" | "lt" | "gte" | "lte" | "like"
+): "=" | "<>" | ">" | ">=" | "<" | "<=" | "like" {
+  switch (op) {
+    case "eq":
+      return "=";
+    case "ne":
+      return "<>";
+    case "gt":
+      return ">";
+    case "lt":
+      return "<";
+    case "gte":
+      return ">=";
+    case "lte":
+      return "<=";
+    case "like":
+      return "like";
+  }
+}
 
 export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
   constructor(private model: M, private seedCount: number) {}
@@ -14,7 +35,9 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
     const schema_types = model_sql_types(this.model);
 
     // create schema
-    let schemaBuilder = db.schema.createTable(this.model.tablename).ifNotExists();
+    let schemaBuilder = db.schema
+      .createTable(this.model.tablename)
+      .ifNotExists();
     for (const [key, value] of Object.entries(schema_types)) {
       schemaBuilder = schemaBuilder.addColumn(key, value);
     }
@@ -48,14 +71,30 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
 
     return result.length > 0 ? data : null;
   }
-  async list(): Promise<InstanceOf<M>[]> {
-    const result = (await db
-      .selectFrom(this.model.tablename)
-      .selectAll()
-      .orderBy("ctid")
-      .execute()) as InstanceOf<M>[];
+  async list(opts?: ListOptions<M>): Promise<InstanceOf<M>[]> {
+    let query = db.selectFrom(this.model.tablename).selectAll();
+    if (opts?.limit) {
+      query = query.limit(opts.limit);
+    }
+    if (opts?.offset) {
+      query = query.offset(opts.offset);
+    }
+    if (opts?.where) {
+      for (const [lval, op, rval] of opts.where) {
+        query = query.where(lval, opToKyselyOp(op), rval as any);
+      }
+    }
+    if (opts?.orderBy) {
+      for (const [lval, dir] of opts.orderBy) {
+        query = query.orderBy(lval, dir);
+      }
+    } else {
+      query = query.orderBy("ctid");
+    }
+    const result = (await query.execute()) as InstanceOf<M>[];
     return result;
   }
+
   async getById(id: string): Promise<InstanceOf<M> | null> {
     const result = await db
       .selectFrom(this.model.tablename)

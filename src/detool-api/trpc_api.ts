@@ -8,9 +8,43 @@ import type { createTRPCNext } from "@trpc/next";
 export function crudAPI<M extends ModelBase>(model: M) {
   const store = getApiForModel(model);
   return router({
-    list: publicProcedure.query(() => {
-      return store.list();
-    }),
+    list: publicProcedure
+      .input(
+        z
+          .object({
+            limit: z.number().optional(),
+            offset: z.number().optional(),
+            orderBy: z
+              .array(
+                z.tuple([
+                  z.custom(
+                    (v) =>
+                      typeof v === "string" &&
+                      Object.keys(model.fields).includes(v)
+                  ),
+                  z.enum(["asc", "desc"]),
+                ])
+              )
+              .optional(),
+            where: z
+              .array(
+                z.tuple([
+                  z.custom(
+                    (v) =>
+                      typeof v === "string" &&
+                      Object.keys(model.fields).includes(v)
+                  ),
+                  z.enum(["eq", "ne", "gt", "lt", "gte", "lte", "like"]),
+                  z.any(),
+                ])
+              )
+              .optional(),
+          })
+          .optional()
+      )
+      .query(({ input }) => {
+        return store.list(input);
+      }),
     create: publicProcedure
       .input(
         z
@@ -37,12 +71,13 @@ export function crudAPI<M extends ModelBase>(model: M) {
       }),
     update: publicProcedure
       .input(
-        z.strictObject({
-          id: z.string(),
-          // FIXME: this needs to do runtime type validation
-          data: z.custom<InstanceOf<M>>(),
-        })
-        .required()
+        z
+          .strictObject({
+            id: z.string(),
+            // FIXME: this needs to do runtime type validation
+            data: z.custom<InstanceOf<M>>(),
+          })
+          .required()
       )
       .mutation(async ({ input }) => {
         // FIXME: what's going on with these types that it thinks there can be undefined?
@@ -62,10 +97,14 @@ export function crudAPI<M extends ModelBase>(model: M) {
   });
 }
 
-export type CrudApiHooks<M extends ModelBase> = ReturnType<typeof createTRPCNext<ReturnType<typeof crudAPI<M>>>>;
+export type CrudApiHooks<M extends ModelBase> = ReturnType<
+  typeof createTRPCNext<ReturnType<typeof crudAPI<M>>>
+>;
 
 export function allDetoolTrpcCrudRoutes(models: ModelBase[]) {
   return router({
-    ...Object.fromEntries(models.map((model) => [model.routename, crudAPI(model)])),
+    ...Object.fromEntries(
+      models.map((model) => [model.routename, crudAPI(model)])
+    ),
   });
 }

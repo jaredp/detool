@@ -11,13 +11,15 @@ import { EnrichedModel } from "./model";
 const new_instance_symbol = Symbol("new instance");
 
 export function TableAndModalPage<M extends EnrichedModel>(props: {
-  model: M,
+  model: M;
 }) {
   const [selectedUuid, setSelectedUuid] = React.useState<
     string | typeof new_instance_symbol | null
   >(null);
 
-  const result = props.model.hooks.list.useQuery();
+  const result = props.model.hooks.list.useQuery({
+    orderBy: [["id", "asc"]],
+  });
   const createHook = props.model.hooks.create.useMutation();
   const updateHook = props.model.hooks.update.useMutation();
   const deleteHook = props.model.hooks.delete.useMutation();
@@ -73,7 +75,7 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end items-center">
+      <div className="flex items-center justify-end">
         <span className="flex-grow text-sm text-gray-500">
           {instances.length} rows loaded
           <br />

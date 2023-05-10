@@ -11,10 +11,10 @@ export const getApiForModel = <M extends ModelBase>(
     const store = new PostgresModelStore(model, 10);
     const initPromise = store.init();
     return {
-      list: async () => {
+      list: async (opts) => {
         await initPromise;
-        console.log("list", model.name);
-        return store.list();
+        console.log("list", model.name, opts);
+        return store.list(opts);
       },
       create: async (data: InstanceOf<M>) => {
         await initPromise;

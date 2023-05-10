@@ -55,7 +55,9 @@ export function ListDetailPage<M extends EnrichedModel>(props: { model: M }) {
     string | typeof new_instance_symbol | null
   >(null);
 
-  const result = props.model.hooks.list.useQuery();
+  const result = props.model.hooks.list.useQuery({
+    orderBy: [["id", "asc"]],
+  });
   const createHook = props.model.hooks.create.useMutation();
   const updateHook = props.model.hooks.update.useMutation();
   const deleteHook = props.model.hooks.delete.useMutation();
@@ -110,7 +112,7 @@ export function ListDetailPage<M extends EnrichedModel>(props: { model: M }) {
   return (
     <div className="flex h-full flex-1">
       <div className="max-w-xs overflow-y-auto border-r">
-        <div className="p-2 flex justify-end items-center border-b">
+        <div className="flex items-center justify-end border-b p-2">
           <div className="flex-grow pl-2">
             <div className="text-md font-semibold text-gray-800">
               {props.model.name}
@@ -141,11 +143,15 @@ export function ListDetailPage<M extends EnrichedModel>(props: { model: M }) {
       </div>
       <div className="align-center flex flex-1 flex-col overflow-y-auto p-10">
         {new_modal || detail_modal || (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex h-full items-center justify-center">
             <p className="select-none text-center">
-              <span className="text-gray-800 text-lg">Select a {props.model.name} from the list</span>
+              <span className="text-lg text-gray-800">
+                Select a {props.model.name} from the list
+              </span>
               <br />
-              <span className="text-gray-500 text-md">on the left to view details</span>
+              <span className="text-md text-gray-500">
+                on the left to view details
+              </span>
             </p>
           </div>
         )}
