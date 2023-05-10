@@ -7,6 +7,7 @@ import { Modal } from "../components/Modal";
 import { Loading } from "../components/Loading";
 import { NewInstancePage, EditableCrud } from "./GenericUI";
 import { EnrichedModel } from "./model";
+import { z } from "zod";
 
 const new_instance_symbol = Symbol("new instance");
 
@@ -16,9 +17,10 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
   const [selectedUuid, setSelectedUuid] = React.useState<
     string | typeof new_instance_symbol | null
   >(null);
+  const [sort, setSort] = React.useState<[string, "asc" | "desc"] | null>(null);
 
   const result = props.model.hooks.list.useQuery({
-    orderBy: [["id", "asc"]],
+    orderBy: sort ? [sort] : undefined,
   });
   const createHook = props.model.hooks.create.useMutation();
   const updateHook = props.model.hooks.update.useMutation();
@@ -93,7 +95,21 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
       <AdminTable
         model={props.model}
         instances={instances}
+        sort={sort}
         onSelected={(instance) => setSelectedUuid(instance.id)}
+        onColumnSelected={(column) => {
+          if (sort && sort[0] === column) {
+            if (sort[1] === null) {
+              setSort([column, "asc"]);
+            } else if (sort[1] === "asc") {
+              setSort([column, "desc"]);
+            } else if (sort[1] === "desc") {
+              setSort(null);
+            }
+          } else {
+            setSort([column, "asc"]);
+          }
+        }}
       />
 
       {new_modal}
