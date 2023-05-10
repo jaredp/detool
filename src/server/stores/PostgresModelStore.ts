@@ -2,7 +2,7 @@
 
 import { ModelBase, InstanceOf } from "../../detool-api/model";
 import { dummy_instance, model_sql_types } from "../../detool-api/ui";
-import { CountOptions, ListOptions, ModelStore } from "./api";
+import { CountOptions, FilterDescriptor, ListOptions, ModelStore } from "./api";
 import { createKysely } from "@vercel/postgres-kysely";
 
 const db = createKysely<any>();
@@ -72,31 +72,28 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
     return result.length > 0 ? data : null;
   }
 
-  async count(opts?: CountOptions<M>): Promise<number> {
-    let query = db
-      .selectFrom(this.model.tablename)
-      .select(db.fn.countAll().as("c"));
-    if (opts?.where) {
-      for (const [lval, op, rval] of opts.where) {
-        query = query.where(lval, opToKyselyOp(op), rval as any);
-      }
+  filtered_collection(filter: FilterDescriptor<M>) {
+    let query = db.selectFrom(this.model.tablename);
+    for (const [lval, op, rval] of filter) {
+      query = query.where(lval, opToKyselyOp(op), rval as any);
     }
-    const result = await query.executeTakeFirst();
+    return query;
+  }
+
+  async count(opts?: CountOptions<M>): Promise<number> {
+    let result = await this.filtered_collection(opts?.where ?? [])
+      .select(db.fn.countAll().as("c"))
+      .executeTakeFirst();
     return Number(result?.c) ?? 0;
   }
 
   async list(opts?: ListOptions<M>): Promise<InstanceOf<M>[]> {
-    let query = db.selectFrom(this.model.tablename).selectAll();
+    let query = this.filtered_collection(opts?.where ?? []).selectAll();
     if (opts?.limit) {
       query = query.limit(opts.limit);
     }
     if (opts?.offset) {
       query = query.offset(opts.offset);
-    }
-    if (opts?.where) {
-      for (const [lval, op, rval] of opts.where) {
-        query = query.where(lval, opToKyselyOp(op), rval as any);
-      }
     }
     if (opts?.orderBy) {
       for (const [lval, dir] of opts.orderBy) {
@@ -105,8 +102,7 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
     } else {
       query = query.orderBy("ctid");
     }
-    const result = (await query.execute()) as InstanceOf<M>[];
-    return result;
+    return await query.execute() as InstanceOf<M>[];
   }
 
   async getById(id: string): Promise<InstanceOf<M> | null> {

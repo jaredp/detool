@@ -22,9 +22,7 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
   const [page, setPage] = React.useState<number>(1);
   const [sort, setSort] = React.useState<[string, "asc" | "desc"] | null>(null);
 
-  const countHook = props.model.hooks.count.useQuery({
-    orderBy: sort ? [sort] : undefined,
-  });
+  const countHook = props.model.hooks.count.useQuery();
 
   const result = props.model.hooks.list.useQuery({
     limit: PAGE_SIZE,

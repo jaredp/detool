@@ -1,29 +1,21 @@
 import { InstanceOf, ModelBase } from "../../detool-api/model";
 
+export type FilterDescriptor<M> = Array<
+  [
+    keyof M & string,
+    "eq" | "ne" | "gt" | "lt" | "gte" | "lte" | "like",
+    M[keyof M]
+  ]
+>;
+
 export interface CountOptions<M> {
-  where?:
-    | Array<
-        [
-          keyof M & string,
-          "eq" | "ne" | "gt" | "lt" | "gte" | "lte" | "like",
-          M[keyof M]
-        ]
-      >
-    | undefined;
+  where?: FilterDescriptor<M>;
 }
 export interface ListOptions<M> {
   limit?: number | undefined;
   offset?: number | undefined;
   orderBy?: Array<[keyof M & string, "asc" | "desc"]> | undefined;
-  where?:
-    | Array<
-        [
-          keyof M & string,
-          "eq" | "ne" | "gt" | "lt" | "gte" | "lte" | "like",
-          M[keyof M]
-        ]
-      >
-    | undefined;
+  where?: FilterDescriptor<M>;
 }
 
 export interface ModelStore<M extends ModelBase> {
