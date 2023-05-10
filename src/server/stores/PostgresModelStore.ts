@@ -2,7 +2,7 @@
 
 import { ModelBase, InstanceOf } from "../../detool-api/model";
 import { dummy_instance, model_sql_types } from "../../detool-api/ui";
-import { ListOptions, ModelStore } from "./api";
+import { CountOptions, ListOptions, ModelStore } from "./api";
 import { createKysely } from "@vercel/postgres-kysely";
 
 const db = createKysely<any>();
@@ -71,6 +71,20 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
 
     return result.length > 0 ? data : null;
   }
+
+  async count(opts?: CountOptions<M>): Promise<number> {
+    let query = db
+      .selectFrom(this.model.tablename)
+      .select(db.fn.countAll().as("c"));
+    if (opts?.where) {
+      for (const [lval, op, rval] of opts.where) {
+        query = query.where(lval, opToKyselyOp(op), rval as any);
+      }
+    }
+    const result = await query.executeTakeFirst();
+    return Number(result?.c) ?? 0;
+  }
+
   async list(opts?: ListOptions<M>): Promise<InstanceOf<M>[]> {
     let query = db.selectFrom(this.model.tablename).selectAll();
     if (opts?.limit) {

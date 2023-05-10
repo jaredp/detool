@@ -1,15 +1,17 @@
 import * as React from "react";
 import { AdminTable } from "../components/AdminTable";
 import { DefaultForm } from "./ui";
-import { Button } from "flowbite-react";
+import { Button, Pagination, PaginationButtonProps } from "flowbite-react";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { Modal } from "../components/Modal";
 import { Loading } from "../components/Loading";
 import { NewInstancePage, EditableCrud } from "./GenericUI";
 import { EnrichedModel } from "./model";
-import { z } from "zod";
+import clsx from "clsx";
 
 const new_instance_symbol = Symbol("new instance");
+
+const PAGE_SIZE = 5;
 
 export function TableAndModalPage<M extends EnrichedModel>(props: {
   model: M;
@@ -17,19 +19,26 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
   const [selectedUuid, setSelectedUuid] = React.useState<
     string | typeof new_instance_symbol | null
   >(null);
+  const [page, setPage] = React.useState<number>(1);
   const [sort, setSort] = React.useState<[string, "asc" | "desc"] | null>(null);
 
+  const countHook = props.model.hooks.count.useQuery({
+    orderBy: sort ? [sort] : undefined,
+  });
+
   const result = props.model.hooks.list.useQuery({
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
     orderBy: sort ? [sort] : undefined,
   });
   const createHook = props.model.hooks.create.useMutation();
   const updateHook = props.model.hooks.update.useMutation();
   const deleteHook = props.model.hooks.delete.useMutation();
 
-  if (!result.data) {
+  if (!result.data || !countHook.data) {
     return <Loading />;
   }
-
+  const instanceCount = countHook.data;
   const instances = result.data;
   const selected = instances.find((p) => p.id === selectedUuid);
 
@@ -75,11 +84,32 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
     </Modal>
   );
 
+  const totalPages = Math.ceil(instanceCount / PAGE_SIZE);
+  const paginator =
+    totalPages > 1 ? (
+      <div className="flex items-center justify-center text-center">
+        <Pagination
+          currentPage={1}
+          onPageChange={(page) => setPage(page)}
+          showIcons={true}
+          totalPages={totalPages}
+          renderPaginationButton={(props: PaginationButtonProps) => (
+            <button
+              className={clsx(
+                props.active ? "bg-blue-500 text-white" : "bg-white",
+                `rounded border border-blue-500 px-4 py-2 font-semibold text-blue-500 hover:bg-blue-100`
+              )}
+              {...props}
+            />
+          )}
+        />
+      </div>
+    ) : null;
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-end">
         <span className="flex-grow text-sm text-gray-500">
-          {instances.length} rows loaded
+          {instanceCount} total rows loaded
           <br />
           Click on a row edit to edit it
         </span>
@@ -111,6 +141,7 @@ export function TableAndModalPage<M extends EnrichedModel>(props: {
           }
         }}
       />
+      {paginator}
 
       {new_modal}
       {detail_modal}

@@ -11,6 +11,11 @@ export const getApiForModel = <M extends ModelBase>(
     const store = new PostgresModelStore(model, 10);
     const initPromise = store.init();
     return {
+      count: async (opts) => {
+        await initPromise;
+        console.log("count", model.name, opts);
+        return store.count(opts);
+      },
       list: async (opts) => {
         await initPromise;
         console.log("list", model.name, opts);

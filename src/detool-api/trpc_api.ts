@@ -8,6 +8,42 @@ import type { createTRPCNext } from "@trpc/next";
 export function crudAPI<M extends ModelBase>(model: M) {
   const store = getApiForModel(model);
   return router({
+    count: publicProcedure
+      .input(
+        z
+          .object({
+            orderBy: z
+              .array(
+                z.tuple([
+                  z.custom(
+                    (v) =>
+                      typeof v === "string" &&
+                      Object.keys(model.fields).includes(v)
+                  ),
+                  z.enum(["asc", "desc"]),
+                ])
+              )
+              .optional(),
+            where: z
+              .array(
+                z.tuple([
+                  z.custom(
+                    (v) =>
+                      typeof v === "string" &&
+                      Object.keys(model.fields).includes(v)
+                  ),
+                  z.enum(["eq", "ne", "gt", "lt", "gte", "lte", "like"]),
+                  z.any(),
+                ])
+              )
+              .optional(),
+          })
+          .optional()
+      )
+      .query(async ({ input }) => {
+        const result = await store.count(input);
+        return result;
+      }),
     list: publicProcedure
       .input(
         z
