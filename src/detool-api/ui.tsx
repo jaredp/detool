@@ -1,5 +1,5 @@
 import { Row } from "../components/Row";
-import { ModelBase, InstanceOf, Field, CrudUI } from "./model";
+import { ModelBase, InstanceOf, Field, CrudUI, isComputedField, ComputedField, DatabaseInstanceOf } from "./model";
 
 /* there's apparently no way to correctly type in typescript */
 export function mapFields<M extends ModelBase>(
@@ -43,15 +43,76 @@ function zipFields<M extends ModelBase>(
 export async function dummy_instance<M extends ModelBase>(
   model: M
 ): Promise<InstanceOf<M>> {
-  return mapFieldsAsync(model, async (field) =>
-    field.dummy_value()
-  ) as InstanceOf<M>;
+  // First create dummy values for regular fields
+  const regularFields = await mapFieldsAsync(model, async (field, name) => {
+    if (isComputedField(field)) {
+      return undefined; // We'll compute this later
+    }
+    return field.dummy_value();
+  });
+
+  // Now compute the computed fields based on the regular field values
+  const computedFields = mapFields(model, (field, name) => {
+    if (isComputedField(field)) {
+      return (field as ComputedField<any, any>).computeFn(regularFields);
+    }
+    return (regularFields as any)[name];
+  });
+
+  return computedFields as InstanceOf<M>;
 }
 
 export function blank_instance<M extends ModelBase>(model: M): InstanceOf<M> {
-  return mapFields(model, (field: Field<any>) =>
-    field.initial_value()
-  ) as InstanceOf<M>;
+  // First create initial values for regular fields
+  const regularFields = mapFields(model, (field: Field<any>, name) => {
+    if (isComputedField(field)) {
+      return undefined; // We'll compute this later
+    }
+    return field.initial_value();
+  });
+
+  // Now compute the computed fields based on the regular field values
+  const computedFields = mapFields(model, (field, name) => {
+    if (isComputedField(field)) {
+      return (field as ComputedField<any, any>).computeFn(regularFields);
+    }
+    return (regularFields as any)[name];
+  });
+
+  return computedFields as InstanceOf<M>;
+}
+
+// New function to compute values for computed fields given a database instance
+export function enrichWithComputedFields<M extends ModelBase>(
+  model: M,
+  dbInstance: DatabaseInstanceOf<M>
+): InstanceOf<M> {
+  const enrichedInstance = { ...dbInstance } as any;
+
+  // Compute values for computed fields
+  Object.entries(model.fields).forEach(([fieldName, field]) => {
+    if (isComputedField(field)) {
+      enrichedInstance[fieldName] = (field as ComputedField<any, any>).computeFn(dbInstance);
+    }
+  });
+
+  return enrichedInstance as InstanceOf<M>;
+}
+
+// New function to extract only the database fields from a full instance
+export function extractDatabaseFields<M extends ModelBase>(
+  model: M,
+  instance: InstanceOf<M>
+): DatabaseInstanceOf<M> {
+  const dbInstance = {} as any;
+
+  Object.entries(model.fields).forEach(([fieldName, field]) => {
+    if (!isComputedField(field)) {
+      dbInstance[fieldName] = instance[fieldName as keyof typeof instance];
+    }
+  });
+
+  return dbInstance as DatabaseInstanceOf<M>;
 }
 
 export function view_ui<M extends ModelBase>(
@@ -70,13 +131,23 @@ export function edit_ui<M extends ModelBase>(
   instance: InstanceOf<M>,
   update: (newInstance: InstanceOf<M>) => void
 ): CrudUI<M> {
-  return zipFields(model, instance, (name, field, value) =>
-    field.edit(
-      value,
-      (newValue) => update({ ...instance, [name]: newValue }),
-      name as string
-    )
-  );
+  return zipFields(model, instance, (name, field, value) => {
+    const updateField = (newValue: any) => {
+      const newInstance = { ...instance, [name]: newValue };
+      
+      // Recompute all computed fields when any field changes
+      Object.entries(model.fields).forEach(([computedFieldName, computedField]) => {
+        if (isComputedField(computedField)) {
+          newInstance[computedFieldName as keyof typeof newInstance] = 
+            (computedField as ComputedField<any, any>).computeFn(newInstance);
+        }
+      });
+      
+      update(newInstance);
+    };
+
+    return field.edit(value, updateField, name as string);
+  });
 }
 
 const SimpleForm = (props: { instance: any }) => {
@@ -136,6 +207,11 @@ export type SqlTypesOf<M extends ModelBase> = {
 };
 export function model_sql_types<M extends ModelBase>(model: M): SqlTypesOf<M> {
   return mapFields(model, (field) => {
+    // Skip computed fields for SQL schema generation
+    if (isComputedField(field)) {
+      return null; // This will be filtered out when creating the schema
+    }
+
     const exampleValue = field.initial_value();
     if (exampleValue instanceof Date) {
       return "timestamp";

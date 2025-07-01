@@ -153,3 +153,107 @@ export const LongText: Field<string> = {
 
 // TODO add null type
 export const Optional = <T,>(field: Field<T>): Field<T> => field;
+
+// New computed field types
+export interface ComputedField<T, TInstance = any> extends Field<T> {
+  isComputed: true;
+  computeFn: (instance: TInstance) => T;
+  sqlExpression?: string; // Optional SQL expression for database-level computation
+}
+
+export const ComputedString = <TInstance = any>(
+  computeFn: (instance: TInstance) => string,
+  options?: {
+    sqlExpression?: string;
+    displayFormat?: (val: string) => React.ReactNode;
+  }
+): ComputedField<string, TInstance> => ({
+  isComputed: true,
+  computeFn,
+  sqlExpression: options?.sqlExpression,
+  dummy_value: async () => "computed_value",
+  initial_value: () => "",
+  view: (val) => options?.displayFormat ? options.displayFormat(val) : val,
+  edit: (val, _update, fieldName) => (
+    <div className="flex items-center px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg">
+      <span className="text-gray-500 text-sm italic">
+        {humanize_label(fieldName)} (computed)
+      </span>
+      <span className="ml-2 font-medium">{val}</span>
+    </div>
+  ),
+});
+
+export const ComputedNumber = <TInstance = any>(
+  computeFn: (instance: TInstance) => number,
+  options?: {
+    sqlExpression?: string;
+    displayFormat?: (val: number) => React.ReactNode;
+  }
+): ComputedField<number, TInstance> => ({
+  isComputed: true,
+  computeFn,
+  sqlExpression: options?.sqlExpression,
+  dummy_value: async () => 42,
+  initial_value: () => 0,
+  view: (val) => options?.displayFormat ? options.displayFormat(val) : val.toString(),
+  edit: (val, _update, fieldName) => (
+    <div className="flex items-center px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg">
+      <span className="text-gray-500 text-sm italic">
+        {humanize_label(fieldName)} (computed)
+      </span>
+      <span className="ml-2 font-medium">{val}</span>
+    </div>
+  ),
+});
+
+export const ComputedDate = <TInstance = any>(
+  computeFn: (instance: TInstance) => Date,
+  options?: {
+    sqlExpression?: string;
+    displayFormat?: (val: Date) => React.ReactNode;
+  }
+): ComputedField<Date, TInstance> => ({
+  isComputed: true,
+  computeFn,
+  sqlExpression: options?.sqlExpression,
+  dummy_value: async () => new Date(),
+  initial_value: () => new Date(),
+  view: (val) => options?.displayFormat ? options.displayFormat(val) : val.toISOString().slice(0, 10),
+  edit: (val, _update, fieldName) => (
+    <div className="flex items-center px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg">
+      <span className="text-gray-500 text-sm italic">
+        {humanize_label(fieldName)} (computed)
+      </span>
+      <span className="ml-2 font-medium">{val.toISOString().slice(0, 10)}</span>
+    </div>
+  ),
+});
+
+export const ComputedBoolean = <TInstance = any>(
+  computeFn: (instance: TInstance) => boolean,
+  options?: {
+    sqlExpression?: string;
+    displayFormat?: (val: boolean) => React.ReactNode;
+  }
+): ComputedField<boolean, TInstance> => ({
+  isComputed: true,
+  computeFn,
+  sqlExpression: options?.sqlExpression,
+  dummy_value: async () => true,
+  initial_value: () => false,
+  view: (val, fieldName) => options?.displayFormat ? options.displayFormat(val) : (
+    <div className="flex w-full flex-grow items-baseline">
+      <input type="checkbox" className="mx-2" checked={val} readOnly disabled />
+      <span>{humanize_label(fieldName)} (computed)</span>
+    </div>
+  ),
+  edit: (val, _update, fieldName) => (
+    <div className="flex items-center px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg">
+      <input type="checkbox" className="mx-2" checked={val} readOnly disabled />
+      <span className="text-gray-500 text-sm italic">
+        {humanize_label(fieldName)} (computed)
+      </span>
+    </div>
+  ),
+});

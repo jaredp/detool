@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { router, publicProcedure } from "../server/api/trpc";
-import { ModelBase, InstanceOf } from "./model";
+import { ModelBase, InstanceOf, DatabaseInstanceOf } from "./model";
 import { getApiForModel } from "./state";
 import type { createTRPCNext } from "@trpc/next";
 
@@ -64,6 +64,8 @@ export function crudAPI<M extends ModelBase>(model: M) {
         z
           .strictObject({
             // FIXME: this needs to do runtime type validation
+            // Note: Using InstanceOf here since the UI may send computed field values
+            // but the store will extract only database fields
             data: z.custom<InstanceOf<M>>(),
           })
           .required()
@@ -89,6 +91,8 @@ export function crudAPI<M extends ModelBase>(model: M) {
           .strictObject({
             id: z.string(),
             // FIXME: this needs to do runtime type validation
+            // Note: Using InstanceOf here since the UI may send computed field values
+            // but the store will extract only database fields
             data: z.custom<InstanceOf<M>>(),
           })
           .required()

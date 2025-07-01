@@ -23,6 +23,17 @@ export interface Field<T> {
   initial_value: () => T;
 }
 
+export interface ComputedField<T, TInstance = any> extends Field<T> {
+  isComputed: true;
+  computeFn: (instance: TInstance) => T;
+  sqlExpression?: string;
+}
+
+// Type guard to check if a field is computed
+export const isComputedField = <T>(field: Field<T>): field is ComputedField<T> => {
+  return 'isComputed' in field && (field as any).isComputed === true;
+};
+
 export interface ModelBase<
   Fields extends { [field_name: string]: Field<any> } = {}
 > {
@@ -39,9 +50,26 @@ export interface ModelBase<
 }
 
 export type FieldType<T> = T extends Field<infer X> ? X : never;
+
+// Helper type to separate regular fields from computed fields
+export type RegularFields<T extends ModelBase> = {
+  [K in keyof T["fields"]]: T["fields"][K] extends ComputedField<any> ? never : K;
+}[keyof T["fields"]];
+
+export type ComputedFields<T extends ModelBase> = {
+  [K in keyof T["fields"]]: T["fields"][K] extends ComputedField<any> ? K : never;
+}[keyof T["fields"]];
+
+// Instance type includes all fields (regular + computed)
 export type InstanceOf<T extends ModelBase> = {
   [Property in keyof T["fields"]]: FieldType<T["fields"][Property]>;
 };
+
+// Database instance type only includes regular fields (computed fields are calculated)
+export type DatabaseInstanceOf<T extends ModelBase> = {
+  [Property in RegularFields<T>]: FieldType<T["fields"][Property]>;
+};
+
 export type CrudUI<T extends ModelBase> = {
   [Property in keyof T["fields"]]: React.ReactNode;
 };

@@ -1,7 +1,7 @@
 // singleton class that stores all models
 
-import { ModelBase, InstanceOf } from "../../detool-api/model";
-import { dummy_instance, model_sql_types } from "../../detool-api/ui";
+import { ModelBase, InstanceOf, DatabaseInstanceOf, isComputedField } from "../../detool-api/model";
+import { dummy_instance, model_sql_types, enrichWithComputedFields, extractDatabaseFields } from "../../detool-api/ui";
 import { CountOptions, FilterDescriptor, ListOptions, ModelStore } from "./api";
 import { createKysely } from "@vercel/postgres-kysely";
 
@@ -34,12 +34,16 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
   async init() {
     const schema_types = model_sql_types(this.model);
 
-    // create schema
+    // create schema - only for non-computed fields
     let schemaBuilder = db.schema
       .createTable(this.model.tablename)
       .ifNotExists();
+    
     for (const [key, value] of Object.entries(schema_types)) {
-      schemaBuilder = schemaBuilder.addColumn(key, value);
+      // Skip computed fields (they will be null in the schema_types)
+      if (value !== null) {
+        schemaBuilder = schemaBuilder.addColumn(key, value);
+      }
     }
     await schemaBuilder.execute();
 
@@ -56,14 +60,17 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
         throw new Error("seedCount must be >= 0");
       }
       for (let i = 0; i < this.seedCount; i++) {
-        this.create(await dummy_instance(this.model));
+        const fullInstance = await dummy_instance(this.model);
+        // Only store the database fields
+        const dbInstance = extractDatabaseFields(this.model, fullInstance);
+        await this.createDatabaseRecord(dbInstance);
       }
 
       console.log("PostgresModelStore seeded");
     }
   }
 
-  async create(data: InstanceOf<M>): Promise<InstanceOf<M> | null> {
+  private async createDatabaseRecord(data: DatabaseInstanceOf<M>): Promise<DatabaseInstanceOf<M> | null> {
     const result = await db
       .insertInto(this.model.tablename)
       .values(data)
@@ -72,10 +79,27 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
     return result.length > 0 ? data : null;
   }
 
+  async create(data: InstanceOf<M>): Promise<InstanceOf<M> | null> {
+    // Extract only database fields for storage
+    const dbData = extractDatabaseFields(this.model, data);
+    const dbResult = await this.createDatabaseRecord(dbData);
+    
+    if (!dbResult) {
+      return null;
+    }
+    
+    // Return the full instance with computed fields
+    return enrichWithComputedFields(this.model, dbResult);
+  }
+
   filtered_collection(filter: FilterDescriptor<M>) {
     let query = db.selectFrom(this.model.tablename);
     for (const [lval, op, rval] of filter) {
-      query = query.where(lval, opToKyselyOp(op), rval as any);
+      // Only allow filtering on non-computed fields
+      const field = this.model.fields[lval as keyof typeof this.model.fields];
+      if (!isComputedField(field)) {
+        query = query.where(lval, opToKyselyOp(op), rval as any);
+      }
     }
     return query;
   }
@@ -97,31 +121,54 @@ export class PostgresModelStore<M extends ModelBase> implements ModelStore<M> {
     }
     if (opts?.orderBy) {
       for (const [lval, dir] of opts.orderBy) {
-        query = query.orderBy(lval, dir);
+        // Only allow ordering by non-computed fields
+        const field = this.model.fields[lval as keyof typeof this.model.fields];
+        if (!isComputedField(field)) {
+          query = query.orderBy(lval, dir);
+        }
       }
     } else {
       query = query.orderBy("ctid");
     }
-    return await query.execute() as InstanceOf<M>[];
+    
+    const dbResults = await query.execute() as DatabaseInstanceOf<M>[];
+    
+    // Enrich each result with computed fields
+    return dbResults.map(dbResult => enrichWithComputedFields(this.model, dbResult));
   }
 
   async getById(id: string): Promise<InstanceOf<M> | null> {
-    const result = await db
+    const dbResult = await db
       .selectFrom(this.model.tablename)
       .where("id", "=", id)
-      .executeTakeFirst();
-    return (result as any) ?? null;
+      .executeTakeFirst() as DatabaseInstanceOf<M> | undefined;
+    
+    if (!dbResult) {
+      return null;
+    }
+    
+    return enrichWithComputedFields(this.model, dbResult);
   }
+  
   async update(
     id: string,
     newInstance: InstanceOf<M>
   ): Promise<InstanceOf<M> | null> {
+    // Extract only database fields for update
+    const dbData = extractDatabaseFields(this.model, newInstance);
+    
     const result = await db
       .updateTable(this.model.tablename)
       .where("id", "=", id)
-      .set(newInstance)
+      .set(dbData)
       .executeTakeFirst();
-    return result.numUpdatedRows > 0 ? newInstance : null;
+    
+    if (result.numUpdatedRows === 0) {
+      return null;
+    }
+    
+    // Return the full instance with computed fields
+    return enrichWithComputedFields(this.model, { ...dbData, id } as DatabaseInstanceOf<M>);
   }
 
   async delete(id: string): Promise<boolean> {
